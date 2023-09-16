@@ -16,10 +16,10 @@ modAppli <- function(parametre){
     # STRUCTURE & PARAMETRES DU MODELE
 
     # XX
-    K = parametre[i,1];		# xx
+    K = parametre[i,1];		# Test de conflit
     sr = parametre[i,2];	# xx
     m1 = parametre[i,3];	# xx
-    m2 = parametre[i,4];	# xx
+    m2 = parametre[i,4];	# Test de pas conflit
     m3 = parametre[i,5];	# xx
     f2 = parametre[i,6];	# xx
     f3 = parametre[i,7];	# xx
