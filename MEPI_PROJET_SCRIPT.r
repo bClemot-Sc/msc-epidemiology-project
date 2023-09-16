@@ -109,3 +109,62 @@ ValNominale = c(K=100, sr=0.5, m1=0.0014,
 
 PAR <- matrix(ValNominale, nrow = 1)
 Sorties <- modAppli(PAR)
+
+# Représentations graphiques ----------------------------------------------
+
+Effectifs <- Sorties[[2]]
+
+## Evolution des effectifs des états de santé
+# Creation d'un df pour les effectifs des états de santé
+df <- matrix(NA, nrow = 2*365, ncol = 5)
+colnames(df) <- c("temps","S","E","I","R")
+df[,1] <- 1:(2*365)
+
+# Ajout des sommes des etats de sante dans le df
+for (i in df[,1]) {
+  df[i,2] <- sum(Effectifs[1:3,1,i])
+  df[i,3] <- sum(Effectifs[1:3,2,i])
+  df[i,4] <- sum(Effectifs[1:3,3,i])
+  df[i,5] <- sum(Effectifs[1:3,4,i])
+}
+
+plot(NULL, xlim=c(0,2*365), ylim=c(0,100),xlab = "Temps", ylab = "Effectifs")
+lines(S ~ temps, data = df, col = "black")
+lines(E ~ temps, data = df, col = "blue")
+lines(I ~ temps, data = df, col = "red")
+lines(R ~ temps, data = df, col = "green")
+legend(650, 100, legend=c("S", "E","I","R"),col=c("black","blue", "red","green"), lty=1, cex=0.8)
+
+# Nouveau dataframe avec less effectifs pour les classes d'ages
+df2 <- matrix(NA, nrow = 2 * 365, ncol = 1 + 3 * 4)
+colnames(df2) <- c("temps","JS","JE","JI","JR","A1S","A1E","A1I","A1R","A2S","A2E","A2I","A2R")
+df2[,1] <- 1:(2*365)
+
+for (i in df[,1]) {
+  df2[i,2] <- Effectifs[1,1,i] # JS
+  df2[i,3] <- Effectifs[1,2,i] # JE
+  df2[i,4] <- Effectifs[1,3,i] # JI
+  df2[i,5] <- Effectifs[1,4,i] # JR
+  df2[i,6] <- Effectifs[2,1,i] # A1S
+  df2[i,7] <- Effectifs[2,2,i] # A1E
+  df2[i,8] <- Effectifs[2,3,i] # A1I
+  df2[i,9] <- Effectifs[2,4,i] # A1R
+  df2[i,10] <- Effectifs[3,1,i] # A2S
+  df2[i,11] <- Effectifs[3,2,i] # A2E
+  df2[i,12] <- Effectifs[3,3,i] # A2I
+  df2[i,13] <- Effectifs[3,4,i] # A2R
+}
+
+plot(NULL, xlim=c(0,2*365), ylim=c(0,40),xlab = "Temps", ylab = "Effectifs")
+lines(JS ~ temps, data = df2, col = "lightgrey")
+lines(A1S ~ temps, data = df2, col = "darkgrey")
+lines(A2S ~ temps, data = df2, col = "black")
+lines(JE ~ temps, data = df2, col = "lightblue")
+lines(A1E ~ temps, data = df2, col = "blue")
+lines(A2E ~ temps, data = df2, col = "darkblue")
+lines(JI ~ temps, data = df2, col = "pink")
+lines(A1I ~ temps, data = df2, col = "red")
+lines(A2I ~ temps, data = df2, col = "darkred")
+lines(JR ~ temps, data = df2, col = "lightgreen")
+lines(A1R ~ temps, data = df2, col = "green")
+lines(A2R ~ temps, data = df2, col = "darkgreen")
