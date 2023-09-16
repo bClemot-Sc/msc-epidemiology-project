@@ -95,27 +95,40 @@ modAppli <- function(parametre){
     sorties[i,4] <- sortie4;
     
   }# fin boucle sc?narios AS
-  return(sorties)
+  return(list(sorties,MAT))
 } # fin fonction du mod?le
 
 # END
 
 #### Application de la fonction
-
-ValNominale = c(K=100, sr=0.5, m1=0.0014,
-                m2=0.00029, m3=0.0019, f2=0.0019, f3=0.0082, portee=5, t1=1/365, t2=1/365, trans=0.3, lat=1/5, rec=1/20,
-                loss=1/100, madd=0.001)
+ValNominale = c(
+  K = 100,
+  sr = 0.5,
+  m1 = 0.0014,
+  m2 = 0.00029,
+  m3 = 0.0019,
+  f2 = 0.0019,
+  f3 = 0.0082,
+  portee = 5,
+  t1 = 1 / 365,
+  t2 = 1 / 365,
+  trans = 0.3,
+  lat = 1 / 5,
+  rec = 1 / 20,
+  loss = 1 / 100,
+  madd = 0.001
+)
 
 
 PAR <- matrix(ValNominale, nrow = 1)
 Sorties <- modAppli(PAR)
 
-# Représentations graphiques ----------------------------------------------
+# Repr?sentations graphiques ----------------------------------------------
 
 Effectifs <- Sorties[[2]]
 
-## Evolution des effectifs des états de santé
-# Creation d'un df pour les effectifs des états de santé
+## Evolution des effectifs des ?tats de sant?
+# Creation d'un df pour les effectifs des ?tats de sant?
 df <- matrix(NA, nrow = 2*365, ncol = 5)
 colnames(df) <- c("temps","S","E","I","R")
 df[,1] <- 1:(2*365)

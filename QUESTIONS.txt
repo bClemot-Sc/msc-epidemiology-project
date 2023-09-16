@@ -1,0 +1,2 @@
+1 - Justifier les valeurs de paramètres testés dans OAT
+-------- Comment justifier ? Dit-on conserver les hypothèses du modèles ? (e.g. on maintient m3 < m2 ???)
