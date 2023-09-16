@@ -22,7 +22,7 @@ modAppli <- function(parametre){
     m1 = parametre[i,3];	# xx
     m2 = parametre[i,4];	# Test de pas conflit
     m3 = parametre[i,5];	# xx
-    f2 = parametre[i,6];	# xx
+    f2 = parametre[i,6];	# Nouveau test de conflit
     f3 = parametre[i,7];	# xx
     portee = parametre[i,8];	# Nb d'enfant
     t1 = parametre[i,9];	# xx
