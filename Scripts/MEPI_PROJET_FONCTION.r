@@ -123,11 +123,11 @@ modAppli <- function(parametre){
     
     # Integration des effectifs simules a leur liste de sortie
     sortie.MAT[[i]] <- MAT
-    names(sortie.MAT)[1] <- paste0("scenario_", i)
+    names(sortie.MAT)[i] <- paste0("scenario_", i)
     
     # Integration des incidences journalieres a leur matrice de sortie
     sortie.nvinf[[i]] <- nvinf
-    names(sortie.nvinf)[1] <- paste0("scenario_", i)
+    names(sortie.nvinf)[i] <- paste0("scenario_", i)
     
   }  # Fin de la boucle de scenario
   
