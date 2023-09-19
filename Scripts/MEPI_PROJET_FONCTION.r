@@ -49,6 +49,7 @@ modAppli <- function(parametre){
 
     # INITIALISATION
     MAT <- array(0, dim=c(4,4,temps), dimnames = list(c("J", "A1", "A2", "total"), c("S", "E", "I", "R")));  # Matrice des effectifs de type [classe,etat,temps]
+
     nvinf <- array(0, dim=c(temps));  # Vecteur de l'incidence journaliere
 
     # Condition initiales (La population est a sa structure d'equilibre, prealablement calculee)
@@ -100,8 +101,6 @@ modAppli <- function(parametre){
     
     
     
-    
-    
     # SORTIES PONCTUELLES
     # --- Taux de morbidite
     sortie1 <- (MAT[4,2,temps]+MAT[4,3,temps])/sum(MAT[4,,temps])
@@ -113,6 +112,7 @@ modAppli <- function(parametre){
     sortie3 <- max(MAT[4,3,1:temps])
     
     # ---  Prevalence sur la premiere annee
+
     sortie4 <- sum(nvinf[1:365])
     
     # Integration des sorties ponctuelles a leur matrice de sortie
@@ -142,6 +142,7 @@ modAppli <- function(parametre){
     # - Vecteur des incidences journalieres
   
   return(list(indicateur_epidemio = sorties, n = sortie.MAT, incidence = sortie.nvinf))
+
   
 }  # Fin fonction
 
@@ -171,6 +172,7 @@ PAR <- matrix(ValNominale, nrow = 1)
 Sorties <- modAppli(PAR)
 
 # Exemple de sortie
-Sorties$indicateur_epidemio
+Sorties$indicateur_epidemio  # indicateurs epidemiologiques par scenario
 Sorties$n$scenario_1   # scenario 1 de la liste n
-Sorties$incidence$scenario_1  # incidence / jour du scénario 1
+Sorties$incidence$scenario_1  # incidence / jour du scenario 1
+
