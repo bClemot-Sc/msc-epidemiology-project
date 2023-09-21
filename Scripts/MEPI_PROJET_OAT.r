@@ -1,6 +1,149 @@
 # Importation du main (fonction + parametres)
 source("MEPI_PROJET_FONCTION.r")
 
+# Fonction de base 
+modAppli <- function(parametre){  
+  
+  # CONDITIONS DE SIMULATION
+  temps = 2*365;  # Nombre de pas de temps en jours
+  
+  # Initialisation pour la sauvegarde de 4 sorties d'indicateurs epidemiologiques pour chaque jeu de parametres
+  sorties <-
+    matrix(0,
+           nrow = nrow(parametre),
+           ncol = 4,
+           dimnames = list(c(paste0("scneario_", 1:nrow(parametre))),
+                           c("tx_morbidite", "incidence_t730", "pic_infectieux", "prevalence_annee_1")))
+  
+  
+  
+  # Initialisation pour la sauvegarde des matrices des effectifs par scenarios
+  sortie.MAT <- list()
+  
+  # Initialisation pour la sauvegarde des incidences journalieres
+  sortie.nvinf <- list()
+  
+  # Boucle des scenarios, autant que de jeux de donnees
+  for (i in 1:nrow(parametre)) { 
+    
+    # STRUCTURE & PARAMETRES DU MODELE
+    # Parametres demographiques
+    K = parametre[i,1];   # Capacite d'accueil du milieu
+    sr = parametre[i,2];	# Sex-ratio
+    m1 = parametre[i,3];	# Mortalite naturelle de la classe d'age 1
+    m2 = parametre[i,4];	# Mortalite naturelle de la classe d'age 2
+    m3 = parametre[i,5];	# Mortalite naturelle de la classe d'age 3
+    f2 = parametre[i,6];	# Taux de fecondite de la classe d'age 2
+    f3 = parametre[i,7];	# Taux de fecondite de la classe d'age 3
+    portee = parametre[i,8];	# Nombre de descendants par reproduction
+    t1 = parametre[i,9];	# Taux de maturation de la classe d'age 1
+    t2 = parametre[i,10];	# Taux de maturation de la classe d'age 2
+    
+    # Parametres epidemiologiques
+    trans = parametre[i,11]; # Taux de transmission de la maladie
+    lat = parametre[i,12];	# Temps d'incubation
+    rec = parametre[i,13];	# Temps de recuperation
+    loss = parametre[i,14];	# Temps de perte d'immunite
+    madd = parametre[i,15];	# Mortalite liee a la maladie
+    
+    # INITIALISATION
+    MAT <- array(0, dim=c(4,4,temps), dimnames = list(c("J", "A1", "A2", "total"), c("S", "E", "I", "R")));  # Matrice des effectifs de type [classe,etat,temps]
+    
+    nvinf <- array(0, dim=c(temps));  # Vecteur de l'incidence journaliere
+    
+    # Condition initiales (La population est a sa structure d'equilibre, prealablement calculee)
+    MAT[1,1,1] <- 27;  # 27 JS
+    MAT[2,1,1] <- 23;  # 23 A1S
+    MAT[3,1,1] <- 36;  # 3 A2S
+    MAT[3,3,1] <- 1;  # 1 A2I
+    
+    # Effectifs totaux par etat de sante
+    MAT[4,1,1] <- sum(MAT[1:3,1,1]);  #S
+    MAT[4,2,1] <- sum(MAT[1:3,2,1]);  #E 
+    MAT[4,3,1] <- sum(MAT[1:3,3,1]);  #I 
+    MAT[4,4,1] <- sum(MAT[1:3,4,1]);  #R 
+    
+    # SIMULATIONS
+    for (t in 1:(temps-1)) {  # Boucle temps
+      
+      # classe d'age J
+      # RQ : les naissances sont non-contaminantes, les nouveaux nes etant dans l'etat S
+      N <- sum(MAT[4,,t]);	# taille de la pop en t
+      MAT[1,1,t+1] <- MAT[1,1,t]*(1-m1-t1-trans*MAT[4,3,t]/N) + loss*MAT[1,4,t] + max(0, sr*portee*(sum(MAT[2,,t])*f2 + sum(MAT[3,,t])*f3) * (1 - N/K)); 
+      MAT[1,2,t+1] <- MAT[1,2,t]*(1-m1-t1-lat) + trans*MAT[1,1,t]*MAT[4,3,t]/N; 
+      MAT[1,3,t+1] <- MAT[1,3,t]*(1-m1-madd-t1-rec) + lat*MAT[1,2,t]; 
+      MAT[1,4,t+1] <- MAT[1,4,t]*(1-m1-t1-loss) + rec*MAT[1,3,t]; 
+      
+      # classe d'age A1
+      MAT[2,1,t+1] <- MAT[1,1,t]*t1 + MAT[2,1,t]*(1-m2-t2-trans*MAT[4,3,t]/N) + loss*MAT[2,4,t];
+      MAT[2,2,t+1] <- MAT[1,2,t]*t1	+ MAT[2,2,t]*(1-m2-t2-lat) + trans*MAT[2,1,t]*MAT[4,3,t]/N;
+      MAT[2,3,t+1] <- MAT[1,3,t]*t1	+ MAT[2,3,t]*(1-m2-madd-t2-rec) + lat*MAT[2,2,t];
+      MAT[2,4,t+1] <- MAT[1,4,t]*t1	+ MAT[2,4,t]*(1-m2-t2-loss) + rec*MAT[2,3,t];
+      
+      # classe d'age 3
+      MAT[3,1,t+1] <- MAT[2,1,t]*t2	+ MAT[3,1,t]*(1-m3-trans*MAT[4,3,t]/N) + loss*MAT[3,4,t];
+      MAT[3,2,t+1] <- MAT[2,2,t]*t2	+ MAT[3,2,t]*(1-m3-lat)	+ trans*MAT[3,1,t]*MAT[4,3,t]/N;
+      MAT[3,3,t+1] <- MAT[2,3,t]*t2	+ MAT[3,3,t]*(1-m3-madd-rec) + lat*MAT[3,2,t];
+      MAT[3,4,t+1] <- MAT[2,4,t]*t2	+ MAT[3,4,t]*(1-m3-loss) + rec*MAT[3,3,t];
+      
+      # Calcule des effectifs totaux par etat de sante
+      MAT[4,1,t+1] <- sum(MAT[1:3,1,t+1]);  #S
+      MAT[4,2,t+1] <- sum(MAT[1:3,2,t+1]);  #E
+      MAT[4,3,t+1] <- sum(MAT[1:3,3,t+1]);  #I
+      MAT[4,4,t+1] <- sum(MAT[1:3,4,t+1]);  #R
+      
+      # Calcule de l'incidence journaliere
+      nvinf[t+1]   <- trans*MAT[4,1,t]*MAT[4,3,t]/N
+      
+    }  # fin boucle temps
+    
+    
+    
+    
+    # SORTIES PONCTUELLES
+    # --- Taux de morbidite
+    sortie1 <- (MAT[4,2,temps]+MAT[4,3,temps])/sum(MAT[4,,temps])
+    
+    # --- Incidence finale
+    sortie2 <- nvinf[temps]
+    
+    # --- Pic infectieux (Nombre max d'infecte)
+    sortie3 <- max(MAT[4,3,1:temps])
+    
+    # ---  Prevalence sur la premiere annee
+    
+    sortie4 <- sum(nvinf[1:365])
+    
+    # Integration des sorties ponctuelles a leur matrice de sortie
+    sorties[i,1] <- sortie1;
+    sorties[i,2] <- sortie2;
+    sorties[i,3] <- sortie3;
+    sorties[i,4] <- sortie4;
+    
+    # Integration des effectifs simules a leur liste de sortie
+    # sortie.MAT[[i]] <- MAT
+    # names(sortie.MAT)[i] <- paste0("scenario_", i)
+    
+    # # Integration des incidences journalieres a leur matrice de sortie
+    # sortie.nvinf[[i]] <- nvinf
+    # names(sortie.nvinf)[i] <- paste0("scenario_", i)
+    
+  }  # Fin de la boucle de scenario
+  
+  
+  
+  
+  
+  
+  # Output de la fonction :
+  # - Matrice des 4 Sorties ponctuelles
+  # - Matrice des effectifs par scenario
+  # - Vecteur des incidences journalieres
+  
+  return(list(indicateur_epidemio = sorties))
+  
+  
+}  # Fin
 
 # Analyse de sensibilite : OAT  -------------------------------------------
 
@@ -9,28 +152,30 @@ source("MEPI_PROJET_FONCTION.r")
 library(sensitivity)
 library(ggplot2)
 library(latex2exp)
+library(numDeriv)
+library(tidyverse)
 
 # On definit les gammes de variation par paramètres (10 valeurs par paramètres)
 # --- On definit les gammes (_g) de variations
 
 gamme_params <- 
   list(
-    K = seq(from = 50, to = 150, length.out = 10),  # 100
+    K = seq(from = 80, to = 120, length.out = 10),  # 100
     sr = seq(from = .4, to = .6, length.out = 10),  # .5
-    m1 = seq(from = 0, to = 0.01, length.out = 10),  # 0.0014 
-    m2 = seq(from = 0, to = 0.002, length.out = 10),  # 0.00029
-    m3 = seq(from = 0, to = 0.01, length.out = 10),  # 0.0019
-    f2 = seq(from = 0, to = 0.02, length.out = 10),   # 0.0019
-    f3 = seq(from = 0, to = 0.03, length.out = 10),   # 0.0082
-    portee = ceiling(seq(from = 1, to = 20, length.out = 10)),  # 5 
-    t1 = seq(from = 1/30, to = 1/400, length.out = 10),  # 1 / 365
-    t2 = seq(from = 1/30, to = 1/400, length.out = 10),  # 1 / 365
+    m1 = seq(from = 0.0007, to = 0.003, length.out = 10),  # 0.0014 
+    m2 = seq(from = .00015, to = 0.00045, length.out = 10),  # 0.00029
+    m3 = seq(from = .000095, to = .0038, length.out = 10),  # 0.0019
+    f2 = seq(from = .000095, to = .0038, length.out = 10),   # 0.0019
+    f3 = seq(from = .0041, to = .01, length.out = 10),   # 0.0082
+    portee = ceiling(seq(from = 3, to = 7, length.out = 10)),  # 5 
+    t1 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
+    t2 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
     
     trans =  seq(from = 0.2, to = 0.4, length.out = 10),  # 0.3
-    lat =  seq(from = 1/2, to = 1/30, length.out = 10),  # 1 / 5
-    rec =  seq(from = 1/5, to = 1/35, length.out = 10),  # 1 / 20
-    loss = seq(from = 1/10, to = 1/200, length.out = 10),  # 1 / 100
-    madd = seq(from = 0, to = 0.01, length.out = 10) # 0.001
+    lat =  seq(from = 1/8, to = 1/2, length.out = 10),  # 1 / 5
+    rec =  seq(from = 1/25, to = 1/15, length.out = 10),  # 1 / 20
+    loss = seq(from = 1/90, to = 1/110, length.out = 10),  # 1 / 100
+    madd = seq(from = 0.0005, to = 0.0015, length.out = 10) # 0.001
   )
   
 # --- On cree une matrice avec en ligne les scenarii et en colonne les paramètres
@@ -57,72 +202,88 @@ for (i in 1:length(gamme_params)){
 }
 
 
+# On modélise chaque scénario avec la fonction modAppli
+oat <- modAppli(mat_scenarios)$indicateur_epidemio
+
+# On modélise avec les paramètres de référence le modèle m0
+m0 <- modAppli(parametres_initiaux)$indicateur_epidemio
+
+
+
+
 # Création d'un algorithme d'évaluation de la sensibilité par paramètres
 # L'idee est de comparer avec le modele initial m0
-# On choisit d'étudier l'effet sur l'incidence
 
-# --- Modèle m0
-m0 <- modAppli(parametres_initiaux)
-m0_incidence <- m0$incidence$scenario_1
-
-# --- Modèles AS
-m_as <- modAppli(mat_scenarios)
-
-# --- on extrait la variance de m0 - modele_AS de chaque scenarios
+# --- on extrait la variance de m0 - modele_AS de chaque scenario
 # --- ... pour estimer la variabilité des écarts de prédictions
-var_as <- vector(mode = "list", length = 15)
-names(var_as) <- names(gamme_params)
+params_var <- vector(mode = "list", length = 15)
+names(params_var) <- names(gamme_params)
 
-list_as <- lapply(
-  X = m_as$incidence,
-  FUN = function(x)
-    ifelse(sd(m0_incidence - x) != 0, sd(m0_incidence - x), 0)
+list_as <- apply(
+  X = oat,
+  MARGIN = 1,
+  FUN = function(x){abs(m0 - x)/x}  # On pondère par x pour pouvoir comparer les paramètre entre eux
 )
 
 
+list_as <- t(list_as)
 
 # --- On associe chacun de ces ecart-type aux paramètres associées modifiées
 # --- Puis on sélectionne la moyenne des 10 variances 
 
   # Matrice qui va contenir la moyenne + SE des variances calculées
-as <-
+as_mean <-
   as.data.frame(matrix(
     data = 0,
     nrow = 15,
-    ncol = 2,
-    dimnames = list(names(gamme_params), c("mean_var", "se_var"))
+    ncol = 4,
+    dimnames = list(names(gamme_params), colnames(m0))
   ))
 
+as_se <-
+  as.data.frame(matrix(
+    data = 0,
+    nrow = 15,
+    ncol = 4,
+    dimnames = list(names(gamme_params), colnames(m0))
+  ))
 
 ligne <- 1  # incrémentation ligne pour prendre les paramètres des 10 valeurs de sd pour chaques paramètres
 
   # Moyenne + SE de chaque paramètre représentant l'impact de sa modification par rapport à m0 initial
 for (i in 1:15){
-  as[i, "mean_var"] <- round(mean(unlist(list_as[ligne:(i*10)])), 3)
-  as[i, "se_var"] <- round(sd(unlist(list_as[ligne:(i*10)]))/sqrt(10), 3)
+    as_mean[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = mean)
+    as_se[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = function(x) sd(x)/sqrt(10))
+    
+ 
   
   ligne <- i*10 + 1
   
-}
+}  # fin boucle 'parametre'
 
-  # On ajoute une colonne "type de processus" pour la visualisation
-as["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
+  # On ajoute une colonne "type de processus" et "parametre" pour la visualisation
+as_mean["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
+as_se["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
+as_mean["params"] <- rownames(as_mean)
+as_se["params"] <- rownames(as_se)
+  
+  # On reformate le tableau pour ggplot
+as_mean <- pivot_longer(data = as_mean, cols = 1:4, names_to = "indicateur", values_to = "mean")
+as_se<- pivot_longer(data = as_se, cols = 1:4, names_to = "indicateur", values_to = "se")
 
 
-# On visualise les résultats
-ggplot(data = as, aes(x = factor(x = row.names(as), levels = row.names(as)),  # Pour conserver le nom + ordre des paramètres du modèle
-                      y = mean_var, fill = processus)) +
-  geom_bar(position = position_dodge(), stat = "identity", col = "black", lwd = 0.7, width = 0.6) + 
-  geom_errorbar(aes(ymin = as$mean_var , ymax = as$mean_var + as$se_var), width = 0.2, lwd = 0.8) +
+# On visualise les résultats de l'analyse de sensibilité
+ggplot(data = as_mean, aes(x = factor(params, levels = names(gamme_params)), y = mean, fill = indicateur)) +
+  geom_bar(position = position_dodge(), stat = "identity", col = "black", lwd = 0.8, width = 0.6) + 
+  geom_errorbar(aes(ymin = mean, ymax = mean + as_se$se, group = indicateur), 
+                position = position_dodge(width = 0.6), width = 0.2, lwd = 0.8) +
   theme_classic() +
   xlab(NULL) +
+  facet_wrap(~indicateur, ncol = 1, labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
+  # theme(strip.text = element_blank() +  # Enlève labels des facettes
   ylab(TeX(paste0("Indice de sensibilité", "$(\\sqrt{sigma^2})$"))) +
-  scale_fill_manual(values=c("#EEE5DE", "#8B8682"), 
-                    name="Processus",
-                    breaks=c("demo", "epidemio"),
-                    labels=c("Démographique", "Epidémiologique")) 
-
-
-
-
+  scale_fill_manual(values=c("#ffffff", "#a8b5ae", "#587064", "#0e3123"), 
+                    name=NULL,
+                    breaks=c("incidence_t730", "pic_infectieux", "prevalence_annee_1", "tx_morbidite"),
+                    labels=c("Incidence (t=730)", "Pic infectieux", "Prévalence 1er année", "Taux de morbidité"))
 
