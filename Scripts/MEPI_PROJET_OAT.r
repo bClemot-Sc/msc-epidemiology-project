@@ -1,5 +1,5 @@
 # Importation du main (fonction + parametres)
-source("MEPI_PROJET_FONCTION.r")
+source("C:/Users/p_a_8/Documents/GitHub/MEPI-Projet/Scripts/MEPI_PROJET_FONCTION.r")
 
 # Fonction de base 
 modAppli <- function(parametre){  
@@ -154,6 +154,7 @@ library(ggplot2)
 library(latex2exp)
 library(numDeriv)
 library(tidyverse)
+library(latex2exp)
 
 # On definit les gammes de variation par paramètres (10 valeurs par paramètres)
 # --- On definit les gammes (_g) de variations
@@ -281,9 +282,93 @@ ggplot(data = as_mean, aes(x = factor(params, levels = names(gamme_params)), y =
   xlab(NULL) +
   facet_wrap(~indicateur, ncol = 1, labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
   # theme(strip.text = element_blank() +  # Enlève labels des facettes
-  ylab(TeX(paste0("Indice de sensibilité", "$(\\sqrt{sigma^2})$"))) +
+  ylab(TeX(paste0("Indice de sensibilité  ", "$(\\sqrt{sigma^2})$"))) +
   scale_fill_manual(values=c("#ffffff", "#a8b5ae", "#587064", "#0e3123"), 
                     name=NULL,
                     breaks=c("incidence_t730", "pic_infectieux", "prevalence_annee_1", "tx_morbidite"),
-                    labels=c("Incidence (t=730)", "Pic infectieux", "Prévalence 1er année", "Taux de morbidité"))
+                    labels=c("Incidence (t=730)", "Pic infectieux", "Prévalence 1er année", "Taux de morbidité")) +
+  theme(legend.position = "none")
 
+
+
+
+
+
+
+
+# --- on extrait la dérivée partielle ()
+# --- ... pour estimer la variabilité des écarts de prédictions
+params_var <- vector(mode = "list", length = 15)
+names(params_var) <- names(gamme_params)
+
+list_as <- apply(
+  X = oat,
+  MARGIN = 1,
+  FUN = function(x){abs(m0 - x)/x}  # On pondère par x pour pouvoir comparer les paramètre entre eux
+)
+
+
+list_as <- t(list_as)
+
+# --- On associe chacun de ces ecart-type aux paramètres associées modifiées
+# --- Puis on sélectionne la moyenne des 10 variances 
+
+# Matrice qui va contenir la moyenne + SE des variances calculées
+as_mean <-
+  as.data.frame(matrix(
+    data = 0,
+    nrow = 15,
+    ncol = 4,
+    dimnames = list(names(gamme_params), colnames(m0))
+  ))
+
+as_se <-
+  as.data.frame(matrix(
+    data = 0,
+    nrow = 15,
+    ncol = 4,
+    dimnames = list(names(gamme_params), colnames(m0))
+  ))
+
+ligne <- 1  # incrémentation ligne pour prendre les paramètres des 10 valeurs de sd pour chaques paramètres
+
+# Moyenne + SE de chaque paramètre représentant l'impact de sa modification par rapport à m0 initial
+for (i in 1:15){
+  as_mean[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = mean)
+  as_se[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = function(x) sd(x)/sqrt(10))
+  
+  
+  
+  ligne <- i*10 + 1
+  
+}  # fin boucle 'parametre'
+
+# On ajoute une colonne "type de processus" et "parametre" pour la visualisation
+as_mean["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
+as_se["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
+as_mean["params"] <- rownames(as_mean)
+as_se["params"] <- rownames(as_se)
+
+# On reformate le tableau pour ggplot
+as_mean <- pivot_longer(data = as_mean, cols = 1:4, names_to = "indicateur", values_to = "mean")
+as_se<- pivot_longer(data = as_se, cols = 1:4, names_to = "indicateur", values_to = "se")
+
+
+# On visualise les résultats de l'analyse de sensibilité
+ggplot(data = as_mean, aes(x = factor(params, levels = names(gamme_params)), y = mean, fill = indicateur)) +
+  geom_bar(position = position_dodge(), stat = "identity", col = "black", lwd = 0.8, width = 0.6) + 
+  geom_errorbar(aes(ymin = mean, ymax = mean + as_se$se, group = indicateur), 
+                position = position_dodge(width = 0.6), width = 0.2, lwd = 0.8) +
+  theme_classic() +
+  xlab(NULL) +
+  facet_wrap(~indicateur, ncol = 1, labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
+  # theme(strip.text = element_blank() +  # Enlève labels des facettes
+  ylab(TeX(paste0("Indice de sensibilité  ", "$(\\sqrt{sigma^2})$"))) +
+  scale_fill_manual(values=c("#ffffff", "#a8b5ae", "#587064", "#0e3123"), 
+                    name=NULL,
+                    breaks=c("incidence_t730", "pic_infectieux", "prevalence_annee_1", "tx_morbidite"),
+                    labels=c("Incidence (t=730)", "Pic infectieux", "Prévalence 1er année", "Taux de morbidité")) +
+  theme(legend.position = "none")
+  
+
+  
