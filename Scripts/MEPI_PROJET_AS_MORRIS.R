@@ -128,13 +128,63 @@ AS.morris <- morris(
     levels = 6,
     grid.jump = 3
   ),
-  binf = c(80,0.3,0.007,0.0002,0.001,0.001,0.007,3,1/370,1/370,0.2,1/20,1/25,1/80,0.005),
-  bsup = c(120,0.8,0.0021,0.00038,0.0028,0.0028,0.0094,7,1/360,1/360,0.4,1/3,1/15,1/120,0.0015)
+  binf = c(80,.4,0.0007,.00015, .000095, .000095,.0041,3,1/340,1/340,0.2,1/8,1/25,1/90,0.0005),
+  bsup = c(120, .6, .003, .00045, .0038, .0038, .01, 7, 1/385, 1/385, .4, 1/2, 1/15, 1/110, .0015)
 )
 
 print(AS.morris)
 
-## Representation du graphique de Morris
-plot(AS.morris)
+## Exatraction des paranetres d'interet
+# mu star
+mu.star <- apply(abs(AS.morris$ee), 3, function(M){
+  apply(M, 2, mean)
+})
+# sigma
+sigma <- apply(AS.morris$ee, 3, function(M){
+  apply(M, 2, sd)
+})
+# Dataframe
+df.sorties <- data.frame(AS.morris$factors, mu.star, sigma, row.names = NULL)
+colnames(df.sorties) <- c("Factors","mu.star1","mu.star2","mu.star3","mu.star4","sigma1","sigma2","sigma3","sigma4")
+# Moyenne des sensibilites des 4 sorties
+df.sorties$Moy.mu.star <- rowMeans(df.sorties[,2:5])
+df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
 
-
+## Representations du graphique de Morris
+library(ggplot2)
+library(latex2exp)
+# Première sortie
+ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal()
+# Deuxieme sortie
+ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal()
+# Troisieme sortie
+ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal()
+# Quatrieme sortie
+ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal()
+# Moyenne des 4 sorties 
+ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal()
