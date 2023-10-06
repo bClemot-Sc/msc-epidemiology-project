@@ -1,8 +1,0 @@
-1 - Justifier les valeurs de paramètres testés dans OAT
--------- Comment justifier ? Dit-on conserver les hypothèses du modèles ? (e.g. on maintient m3 < m2 ???)
-
-2 - Fonction de base MAT : pas en sortie du modèle + écrase les scénarios précédent
--------- Peut-être que le focus est sur les indicateurs ? Est-ce que on se fait chier avec les efectifs ? Est-ce vraiment pertinent en épidémio ?
-
-3 - OAT standard et MORRIS
--------- Variations testées des paramètres : variation d'amplitude : X1 varie à pas de temps de 5% et X2 de 10% : donc forcément plus de sensibilité pour le paramètre qui varie beaucoup...

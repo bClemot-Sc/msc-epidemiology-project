@@ -178,7 +178,7 @@ gamme_params <-
     loss = seq(from = 1/90, to = 1/110, length.out = 10),  # 1 / 100
     madd = seq(from = 0.0005, to = 0.0015, length.out = 10) # 0.001
   )
-  
+
 # --- On cree une matrice avec en ligne les scenarii et en colonne les paramètres
 parametres_initiaux <- PAR
 
@@ -232,7 +232,7 @@ list_as <- t(list_as)
 # --- On associe chacun de ces ecart-type aux paramètres associées modifiées
 # --- Puis on sélectionne la moyenne des 10 variances 
 
-  # Matrice qui va contenir la moyenne + SE des variances calculées
+# Matrice qui va contenir la moyenne + SE des variances calculées
 as_mean <-
   as.data.frame(matrix(
     data = 0,
@@ -251,24 +251,24 @@ as_se <-
 
 ligne <- 1  # incrémentation ligne pour prendre les paramètres des 10 valeurs de sd pour chaques paramètres
 
-  # Moyenne + SE de chaque paramètre représentant l'impact de sa modification par rapport à m0 initial
+# Moyenne + SE de chaque paramètre représentant l'impact de sa modification par rapport à m0 initial
 for (i in 1:15){
-    as_mean[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = mean)
-    as_se[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = function(x) sd(x)/sqrt(10))
-    
- 
+  as_mean[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = mean)
+  as_se[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = function(x) sd(x)/sqrt(10))
+  
+  
   
   ligne <- i*10 + 1
   
 }  # fin boucle 'parametre'
 
-  # On ajoute une colonne "type de processus" et "parametre" pour la visualisation
+# On ajoute une colonne "type de processus" et "parametre" pour la visualisation
 as_mean["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
 as_se["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
 as_mean["params"] <- rownames(as_mean)
 as_se["params"] <- rownames(as_se)
-  
-  # On reformate le tableau pour ggplot
+
+# On reformate le tableau pour ggplot
 as_mean <- pivot_longer(data = as_mean, cols = 1:4, names_to = "indicateur", values_to = "mean")
 as_se<- pivot_longer(data = as_se, cols = 1:4, names_to = "indicateur", values_to = "se")
 
@@ -369,6 +369,3 @@ ggplot(data = as_mean, aes(x = factor(params, levels = names(gamme_params)), y =
                     breaks=c("incidence_t730", "pic_infectieux", "prevalence_annee_1", "tx_morbidite"),
                     labels=c("Incidence (t=730)", "Pic infectieux", "Prévalence 1er année", "Taux de morbidité")) +
   theme(legend.position = "none")
-  
-
-  
