@@ -280,9 +280,9 @@ ggplot(data = as_mean, aes(x = factor(params, levels = names_para), y = mean, fi
                 position = position_dodge(width = 0.6), width = 0.2, lwd = 0.8) +
   theme_classic() +
   xlab(NULL) +
-  facet_wrap(~indicateur, ncol = 1, scales = "free_y", labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
+  facet_wrap(~indicateur, ncol = 2, nrow = 2, scales = "free_x", labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
   # theme(strip.text = element_blank() +  # Enlève labels des facettes
-  ylab(TeX(paste0("Indice de sensibilité  ", "$(\\sqrt{sigma^2})$"))) +
+  ylab("Indice de sensibilité") +
   ylim(c(0, 0.1)) +
   scale_fill_manual(values=c("#ffffff", "#a8b5ae", "#587064", "#0e3123"), 
                     name=NULL,
