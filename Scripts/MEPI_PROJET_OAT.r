@@ -145,7 +145,7 @@ modAppli <- function(parametre){
   
 }  # Fin
 
-# Analyse de sensibilite : OAT  -------------------------------------------
+#####  OAT STANDARD  -------------------------------------------
 
 # Packages
 # install.packages("sensibility")
@@ -155,6 +155,7 @@ library(latex2exp)
 library(numDeriv)
 library(tidyverse)
 library(latex2exp)
+library(viridis)
 
 # On definit les gammes de variation par paramètres (10 valeurs par paramètres)
 # --- On definit les gammes (_g) de variations
@@ -168,7 +169,7 @@ gamme_params <-
     m3 = seq(from = .000095, to = .0038, length.out = 10),  # 0.0019
     f2 = seq(from = .000095, to = .0038, length.out = 10),   # 0.0019
     f3 = seq(from = .0041, to = .01, length.out = 10),   # 0.0082
-    portee = ceiling(seq(from = 3, to = 7, length.out = 10)),  # 5 
+    portee = seq(from = 3, to = 7, length.out = 10),  # 5 
     t1 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
     t2 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
     
@@ -178,8 +179,15 @@ gamme_params <-
     loss = seq(from = 1/90, to = 1/110, length.out = 10),  # 1 / 100
     madd = seq(from = 0.0005, to = 0.0015, length.out = 10) # 0.001
   )
+<<<<<<< Updated upstream
 
 # --- On cree une matrice avec en ligne les scenarii et en colonne les paramètres
+=======
+  
+  names_para <- names(gamme_params) # Variable contenant les noms des paramètres
+
+  # --- On cree une matrice avec en ligne les scenarii et en colonne les paramètres
+>>>>>>> Stashed changes
 parametres_initiaux <- PAR
 
 mat_scenarios <-
@@ -187,7 +195,7 @@ mat_scenarios <-
     data = parametres_initiaux,
     nrow = 15 * 10,
     ncol = 15,
-    dimnames = list(paste0("scenario", 1:(15 * 10)), names(gamme_params)),
+    dimnames = list(paste0("scenario", 1:(15 * 10)), names_para),
     byrow = T
   )
 
@@ -204,31 +212,23 @@ for (i in 1:length(gamme_params)){
 
 
 # On modélise chaque scénario avec la fonction modAppli
-oat <- modAppli(mat_scenarios)$indicateur_epidemio
+oat <- as.data.frame(modAppli(mat_scenarios)$indicateur_epidemio)
 
 # On modélise avec les paramètres de référence le modèle m0
 m0 <- modAppli(parametres_initiaux)$indicateur_epidemio
 
 
 
+# Visualisation -----------------------------------------------------------
+oat["params"] <- rep(x = names_para, each = 10)
+oat["valeur"] <- format(unlist(gamme_params), scientific = F)
 
-# Création d'un algorithme d'évaluation de la sensibilité par paramètres
-# L'idee est de comparer avec le modele initial m0
-
-# --- on extrait la variance de m0 - modele_AS de chaque scenario
-# --- ... pour estimer la variabilité des écarts de prédictions
-params_var <- vector(mode = "list", length = 15)
-names(params_var) <- names(gamme_params)
-
-list_as <- apply(
-  X = oat,
-  MARGIN = 1,
-  FUN = function(x){abs(m0 - x)/x}  # On pondère par x pour pouvoir comparer les paramètre entre eux
-)
+couleurs_contrastees <- viridis(15)
 
 
-list_as <- t(list_as)
+par(mfrow = c(1,1))
 
+<<<<<<< Updated upstream
 # --- On associe chacun de ces ecart-type aux paramètres associées modifiées
 # --- Puis on sélectionne la moyenne des 10 variances 
 
@@ -288,27 +288,63 @@ ggplot(data = as_mean, aes(x = factor(params, levels = names(gamme_params)), y =
                     breaks=c("incidence_t730", "pic_infectieux", "prevalence_annee_1", "tx_morbidite"),
                     labels=c("Incidence (t=730)", "Pic infectieux", "Prévalence 1er année", "Taux de morbidité")) +
   theme(legend.position = "none")
+=======
+for(sortie in colnames(m0)){
+  plot(NULL, ylim = c(min(oat[,sortie]), max(oat[,sortie])), xlim = c(0, 10), ylab = "Y", xlab = "Gamme", main = paste0(sortie))
+  col = 1
+  for (i in names_para){
+    
+    lines(oat[,sortie][oat$params == i], col = couleurs_contrastees[col])
+    col = col + 1
+  }
+  legend("bottomright", fill = couleurs_contrastees[1:15], legend = names_para, ncol = 3)
+}
+>>>>>>> Stashed changes
 
 
 
+# [Saltelli et al., 2019] - Indice de sensibilité Delta_i : (y_max - y_min) / (x_max-x_min) -------------------------------------------------------------------------
+
+# On extrait le y_min/max et le x_min/max pour chaque sortie du modèle
+parametres_initiaux
 
 
-
-
-
-# --- on extrait la dérivée partielle ()
-# --- ... pour estimer la variabilité des écarts de prédictions
+sorties_var <- vector(mode = "list", length = 4)
 params_var <- vector(mode = "list", length = 15)
-names(params_var) <- names(gamme_params)
+names(sorties_var) <- colnames(m0)
+names(params_var) <- names_para
+
+# --- On emboite la liste des paramètres dans la liste des sorties du modèle
+sorties_var <- lapply(X = sorties_var, FUN = function(x) x <- params_var)
+
+# --- On récupère le xmin et xmax et les sorties du modèle associés
+# oat["param"]
+# --- Fonction apply pour calculer l'indice de sensibilité par sortie du modèle par paramètre par scénario
+indice_col <- 1
+i <- 0
 
 list_as <- apply(
-  X = oat,
+  X = oat[1:4],
   MARGIN = 1,
-  FUN = function(x){abs(m0 - x)/x}  # On pondère par x pour pouvoir comparer les paramètre entre eux
+  
+  FUN = function(x) {
+    
+    i <<-  i + 1
+    x0 <- parametres_initiaux[, indice_col]
+    
+    x <- abs(m0 - x) / (abs(x0 - gamme_params[[indice_col]][i]))
+    
+    if (i == 10) {
+      indice_col <<- indice_col + 1
+      i <<- 0
+      
+    }
+    return(x)
+  }
 )
 
+list_as <- t(list_as)  # on transpose le dataframe
 
-list_as <- t(list_as)
 
 # --- On associe chacun de ces ecart-type aux paramètres associées modifiées
 # --- Puis on sélectionne la moyenne des 10 variances 
@@ -319,7 +355,7 @@ as_mean <-
     data = 0,
     nrow = 15,
     ncol = 4,
-    dimnames = list(names(gamme_params), colnames(m0))
+    dimnames = list(names_para, colnames(m0))
   ))
 
 as_se <-
@@ -327,7 +363,7 @@ as_se <-
     data = 0,
     nrow = 15,
     ncol = 4,
-    dimnames = list(names(gamme_params), colnames(m0))
+    dimnames = list(names_para, colnames(m0))
   ))
 
 ligne <- 1  # incrémentation ligne pour prendre les paramètres des 10 valeurs de sd pour chaques paramètres
@@ -335,7 +371,7 @@ ligne <- 1  # incrémentation ligne pour prendre les paramètres des 10 valeurs 
 # Moyenne + SE de chaque paramètre représentant l'impact de sa modification par rapport à m0 initial
 for (i in 1:15){
   as_mean[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = mean)
-  as_se[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = function(x) sd(x)/sqrt(10))
+  as_se[i, 1:4] <- apply(list_as[ligne:(i*10),1:4], MARGIN = 2, FUN = function(x) sd(x))
   
   
   
@@ -343,11 +379,17 @@ for (i in 1:15){
   
 }  # fin boucle 'parametre'
 
+
+# On centre / réduit les données
+# as_mean <- as.data.frame(apply(X = as_mean, MARGIN = 2, FUN = function(x) scale(x = x, center = T, scale = T)))
+# as_se <- as.data.frame(apply(X = as_se, MARGIN = 2, FUN = function(x) scale(x = x, center = T, scale = T)))
+
+
 # On ajoute une colonne "type de processus" et "parametre" pour la visualisation
 as_mean["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
 as_se["processus"] <- c(rep("demo", 10), rep("epidemio", 5))
-as_mean["params"] <- rownames(as_mean)
-as_se["params"] <- rownames(as_se)
+as_mean["params"] <- names_para
+as_se["params"] <- names_para
 
 # On reformate le tableau pour ggplot
 as_mean <- pivot_longer(data = as_mean, cols = 1:4, names_to = "indicateur", values_to = "mean")
@@ -355,13 +397,13 @@ as_se<- pivot_longer(data = as_se, cols = 1:4, names_to = "indicateur", values_t
 
 
 # On visualise les résultats de l'analyse de sensibilité
-ggplot(data = as_mean, aes(x = factor(params, levels = names(gamme_params)), y = mean, fill = indicateur)) +
+ggplot(data = as_mean, aes(x = factor(params, levels = names_para), y = mean, fill = indicateur)) +
   geom_bar(position = position_dodge(), stat = "identity", col = "black", lwd = 0.8, width = 0.6) + 
   geom_errorbar(aes(ymin = mean, ymax = mean + as_se$se, group = indicateur), 
                 position = position_dodge(width = 0.6), width = 0.2, lwd = 0.8) +
   theme_classic() +
   xlab(NULL) +
-  facet_wrap(~indicateur, ncol = 1, labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
+  facet_wrap(~indicateur, ncol = 1, scales = "free_y", labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
   # theme(strip.text = element_blank() +  # Enlève labels des facettes
   ylab(TeX(paste0("Indice de sensibilité  ", "$(\\sqrt{sigma^2})$"))) +
   scale_fill_manual(values=c("#ffffff", "#a8b5ae", "#587064", "#0e3123"), 
