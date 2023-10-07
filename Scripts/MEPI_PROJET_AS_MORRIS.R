@@ -1,27 +1,32 @@
 #### Analyse de senibilite avec la methode Morris et le package 'sensitivity'
 #_____________________________________________________________________________
 
+# PACKAGES
+library(sensitivity)
+library(ggplot2)
+library(latex2exp)
+library(gridExtra)
+
+
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
-
-
-# Chargement du package 
-library(sensitivity)
 
 
 ## Analyse de sensibilit? ? partir de la fonction morris()
 AS.morris <- morris(
   model = modAppli,
   factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd"),
-  r = 10,
+  r = 100,
   design = list(
     type = 'oat',
     levels = 6,
     grid.jump = 3
   ),
-  binf = c(80,.4,0.0007,.00015, .000095, .000095,.0041,3,1/340,1/340,0.2,1/8,1/25,1/90,0.0005),
-  bsup = c(120, .6, .003, .00045, .0038, .0038, .01, 7, 1/385, 1/385, .4, 1/2, 1/15, 1/110, .0015)
+  binf = c(80,.4,0.0007,.00015, .000095, .000095,.0041,3,1/385,1/385,0.2,1/8,1/25,1/110,0.0005),
+  bsup = c(120, .6, .003, .00045, .0038, .0038, .01, 7, 1/340, 1/340, .4, 1/2, 1/15, 1/90, .0015)
 )
+
+
 
 ## Exatraction des paranetres d'interet
 # mu star
@@ -38,38 +43,18 @@ colnames(df.sorties) <- c("Factors","mu.star1","mu.star2","mu.star3","mu.star4",
 df.sorties$Moy.mu.star <- rowMeans(df.sorties[,2:5])
 df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
 
-## Representations du graphique de Morris
-library(ggplot2)
-library(latex2exp)
 
 # Premi?re sortie - tx morbidité
-ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1, label = Factors)) +
-  geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
-  xlab(TeX("$\\mu^*$")) +
-  ylab(TeX("$\\sigma$")) +
-  theme_minimal()
-
-# Deuxieme sortie : prevalence premiere annee
-ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2, label = Factors)) +
+plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1, label = Factors)) +
   geom_point() +
   geom_text(hjust = 1.5, vjust = 1) +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
-  ggtitle("Prévalence t=730")
+  ggtitle("Taux de morbidité")
 
-# Troisieme sortie : pic infectieux
-ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3, label = Factors)) +
-  geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
-  xlab(TeX("$\\mu^*$")) +
-  ylab(TeX("$\\sigma$")) +
-  theme_minimal() +
-  ggtitle("Pic infectieux")
-
-# Quatrieme sortie : incidence
-ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4, label = Factors)) +
+# Deuxieme sortie : incidence finale
+plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2, label = Factors)) +
   geom_point() +
   geom_text(hjust = 1.5, vjust = 1) +
   xlab(TeX("$\\mu^*$")) +
@@ -77,6 +62,28 @@ ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4, label = Factors)) +
   theme_minimal() +
   ggtitle("Incidence t=730")
 
+# Troisieme sortie : pic infectieux
+plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal() +
+  ggtitle("Pic infectieux")
+
+# Quatrieme sortie : prevalence premiere annee
+plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4, label = Factors)) +
+  geom_point() +
+  geom_text(hjust = 1.5, vjust = 1) +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_minimal() +
+  ggtitle("Prévalence 1ère année")
+
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
+
+par(mfrow = c(1, 1))
 # Moyenne des 4 sorties 
 ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) +
   geom_point() +
@@ -85,3 +92,4 @@ ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) 
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
   ggtitle("Sensibilité moyenne")
+

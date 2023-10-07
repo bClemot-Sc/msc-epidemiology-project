@@ -106,14 +106,13 @@ modAppli <- function(parametre){
     sortie3 <- max(MAT[4,3,1:temps])
     
     # ---  Prevalence sur la premiere annee
-    
     sortie4 <- sum(nvinf[1:365])
     
     # Integration des sorties ponctuelles a leur matrice de sortie
-    sorties[i,1] <- sortie1;
-    sorties[i,2] <- sortie2;
-    sorties[i,3] <- sortie3;
-    sorties[i,4] <- sortie4;
+    sorties[i,1] <- sortie1;  # tx morbidite
+    sorties[i,2] <- sortie2;  # incidence finale
+    sorties[i,3] <- sortie3;  # pic infectieux
+    sorties[i,4] <- sortie4;  # prevalence premiere annee
     
     # Integration des effectifs simules a leur liste de sortie
     # sortie.MAT[[i]] <- MAT
@@ -125,16 +124,6 @@ modAppli <- function(parametre){
     
   }  # Fin de la boucle de scenario
   
-  
-  
-  
-  
-  
-  # Output de la fonction :
-  # - Matrice des 4 Sorties ponctuelles
-  # - Matrice des effectifs par scenario
-  # - Vecteur des incidences journalieres
-  
   return(sorties)
   
   
@@ -142,7 +131,7 @@ modAppli <- function(parametre){
 
 
 #### Parametres initiaux du modele
-parametres_initiaux <-  c(
+parametres_initiaux <-  matrix(c(
   K = 100,
   sr = 0.5,
   m1 = 0.0014,
@@ -158,4 +147,6 @@ parametres_initiaux <-  c(
   rec = 1 / 20,
   loss = 1 / 100,
   madd = 0.001
+), nrow = 1
 )
+

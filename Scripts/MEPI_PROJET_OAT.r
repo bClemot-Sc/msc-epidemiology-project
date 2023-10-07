@@ -26,13 +26,13 @@ gamme_params <-
     f2 = seq(from = .000095, to = .0038, length.out = 10),   # 0.0019
     f3 = seq(from = .0041, to = .01, length.out = 10),   # 0.0082
     portee = seq(from = 3, to = 7, length.out = 10),  # 5 
-    t1 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
-    t2 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
+    t1 = seq(from = 1/385, to = 1/340, length.out = 10),  # 1 / 365
+    t2 = seq(from = 1/385, to = 1/340, length.out = 10),  # 1 / 365
     
     trans =  seq(from = 0.2, to = 0.4, length.out = 10),  # 0.3
     lat =  seq(from = 1/8, to = 1/2, length.out = 10),  # 1 / 5
     rec =  seq(from = 1/25, to = 1/15, length.out = 10),  # 1 / 20
-    loss = seq(from = 1/90, to = 1/110, length.out = 10),  # 1 / 100
+    loss = seq(from = 1/110, to = 1/90, length.out = 10),  # 1 / 100
     madd = seq(from = 0.0005, to = 0.0015, length.out = 10) # 0.001
   )
 
@@ -137,7 +137,7 @@ ggplot(data = as_mean, aes(x = factor(params, levels = names_para), y = mean, fi
   xlab(NULL) +
   facet_wrap(~indicateur, ncol = 2, nrow = 2, scales = "free_x", labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1er année", tx_morbidite = "Taux de morbidité"))) + # Facetter par "indicateur"
   # theme(strip.text = element_blank() +  # Enlève labels des facettes
-  ylab(TeX(paste0("Indice de sensibilité  ", "$(\\sqrt{sigma^2})$"))) +
+  ylab("Indice de sensibilité") +
   ylim(c(0, 0.1)) +
   scale_fill_manual(values=c("#ffffff","#CD0000"), 
                     name=NULL) +
