@@ -26,13 +26,13 @@ gamme_params <-
     f2 = seq(from = .000095, to = .0038, length.out = 10),   # 0.0019
     f3 = seq(from = .0041, to = .01, length.out = 10),   # 0.0082
     portee = seq(from = 3, to = 7, length.out = 10),  # 5 
-    t1 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
-    t2 = seq(from = 1/340, to = 1/385, length.out = 10),  # 1 / 365
+    t1 = seq(from = 1/385, to = 1/340, length.out = 10),  # 1 / 365
+    t2 = seq(from = 1/385, to = 1/340, length.out = 10),  # 1 / 365
     
     trans =  seq(from = 0.2, to = 0.4, length.out = 10),  # 0.3
     lat =  seq(from = 1/8, to = 1/2, length.out = 10),  # 1 / 5
     rec =  seq(from = 1/25, to = 1/15, length.out = 10),  # 1 / 20
-    loss = seq(from = 1/90, to = 1/110, length.out = 10),  # 1 / 100
+    loss = seq(from = 1/110, to = 1/90, length.out = 10),  # 1 / 100
     madd = seq(from = 0.0005, to = 0.0015, length.out = 10) # 0.001
   )
 
