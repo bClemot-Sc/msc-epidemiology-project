@@ -38,29 +38,31 @@ q.arg <- list(list(min = 80, max = 120),
 )
 
 
-# FAST (1000 iterations)
+# FAST (100 iterations)
 # --- Generation des valeurs de parametres pour les differents scenarii 
-as_fast_1000 <- sensitivity::fast99(model = NULL,
+as_fast_100 <- sensitivity::fast99(model = NULL,
                     factors = names_para,
-                    n = 1000, 
+                    n = 100, 
                     q = "qunif",
                     q.arg = q.arg)
 
 
+
+
 # --- On run le modele modAppli sur ces valeurs
-sortie_1000 <- modAppli(as_fast_1000_params$X)
+sortie_100 <- modAppli(as_fast_100$X)
 
 # --- Calcul des variances et indices de Sobol pour chaque sortie pour chaque sortie du modele
-as_fast_1000_sortie1 <- as_fast_1000
-as_fast_1000_sortie2 <- as_fast_1000
-as_fast_1000_sortie3 <- as_fast_1000
-as_fast_1000_sortie4 <- as_fast_1000
+fast_100_sortie1 <- as_fast_100
+fast_100_sortie2 <- as_fast_100
+fast_100_sortie3 <- as_fast_100
+fast_100_sortie4 <- as_fast_100
 
 # (tell() calcul à partir des scenarii les indices de Sobol et complète l'objet 'incomplet' x)
-tell(x = as_fast_1000_sortie1, y = sortie_1000[,1])  # taux de morbidite
-tell(x = as_fast_1000_sortie2, y = sortie_1000[,2])  # incidence t=730
-tell(x = as_fast_1000_sortie3, y = sortie_1000[,3])  # pic infectieux
-tell(x = as_fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
+tell(x = fast_100_sortie1, y = sortie_100[,1])  # taux de morbidite
+tell(x = fast_100_sortie2, y = sortie_100[,2])  # incidence t=730
+tell(x = fast_100_sortie3, y = sortie_100[,3])  # pic infectieux
+tell(x = fast_100_sortie4, y = sortie_100[,4])  # prevalence Aere annee
 
 
 # --- Visualisation
@@ -74,10 +76,10 @@ plot.fast99 <- function(x, ylim = c(0, 1), main = NULL, ...) {
   }
 
 par(mfrow = c(2, 2))
-plot.fast99(as_fast_1000_sortie1, main = "Taux de morbidite")
-plot.fast99(as_fast_1000_sortie2, main = "Incidence t=730")
-plot.fast99(as_fast_1000_sortie3, main = "Pic infectieux")
-plot.fast99(as_fast_1000_sortie4, main = "Prevalence 1ere annee")
+plot.fast99(fast_100_sortie1, main = "Taux de morbidite")
+plot.fast99(fast_100_sortie2, main = "Incidence t=730")
+plot.fast99(fast_100_sortie3, main = "Pic infectieux")
+plot.fast99(fast_100_sortie4, main = "Prevalence 1ere annee")
 
 
 # _________________________________________________________
@@ -93,18 +95,18 @@ as_fast_1000 <- sensitivity::fast99(model = NULL,
 
 
 # --- On run le modele modAppli sur ces valeurs
-sortie_1000 <- modAppli(as_fast_1000_params$X)
+sortie_1000 <- modAppli(as_fast_1000$X)
 
 # --- Calcul des variances et indices de Sobol pour chaque sortie pour chaque sortie du modele
-as_fast_1000_sortie1 <- as_fast_1000
-as_fast_1000_sortie2 <- as_fast_1000
-as_fast_1000_sortie3 <- as_fast_1000
-as_fast_1000_sortie4 <- as_fast_1000
+fast_1000_sortie1 <- as_fast_1000
+fast_1000_sortie2 <- as_fast_1000
+fast_1000_sortie3 <- as_fast_1000
+fast_1000_sortie4 <- as_fast_1000
 
-tell(x = as_fast_1000_sortie1, y = sortie_1000[,1])  # taux de morbidite
-tell(x = as_fast_1000_sortie2, y = sortie_1000[,2])  # incidence t=730
-tell(x = as_fast_1000_sortie3, y = sortie_1000[,3])  # pic infectieux
-tell(x = as_fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
+tell(x = fast_1000_sortie1, y = sortie_1000[,1])  # taux de morbidite
+tell(x = fast_1000_sortie2, y = sortie_1000[,2])  # incidence t=730
+tell(x = fast_1000_sortie3, y = sortie_1000[,3])  # pic infectieux
+tell(x = fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
 
 
 # --- Visualisation
@@ -118,7 +120,7 @@ plot.fast99 <- function(x, ylim = c(0, 1), main = NULL, ...) {
 }
 
 par(mfrow = c(2, 2))
-plot.fast99(as_fast_1000_sortie1, main = "Taux de morbidite")
-plot.fast99(as_fast_1000_sortie2, main = "Incidence t=730")
-plot.fast99(as_fast_1000_sortie3, main = "Pic infectieux")
-plot.fast99(as_fast_1000_sortie4, main = "Prevalence 1ere annee")
+plot.fast99(fast_1000_sortie1, main = "Taux de morbidite")
+plot.fast99(fast_1000_sortie2, main = "Incidence t=730")
+plot.fast99(fast_1000_sortie3, main = "Pic infectieux")
+plot.fast99(fast_1000_sortie4, main = "Prevalence 1ere annee")
