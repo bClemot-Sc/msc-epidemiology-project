@@ -47,6 +47,8 @@ as_fast_100 <- sensitivity::fast99(model = NULL,
                     q.arg = q.arg)
 
 
+
+
 # --- On run le modele modAppli sur ces valeurs
 sortie_100 <- modAppli(as_fast_100$X)
 
