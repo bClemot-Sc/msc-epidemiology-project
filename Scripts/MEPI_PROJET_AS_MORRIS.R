@@ -12,7 +12,7 @@ library(gridExtra)
 source("FONCTION_BASE.R")
 
 
-## Analyse de sensibilit? ? partir de la fonction morris()
+## Analyse de sensibilite a partir de la fonction morris()
 AS.morris <- morris(
   model = modAppli,
   factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd"),
@@ -44,42 +44,55 @@ df.sorties$Moy.mu.star <- rowMeans(df.sorties[,2:5])
 df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
 
 
-# Premi?re sortie - tx morbidité
+
+# Premiere sortie - Taux de morbidite
 plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1, label = Factors)) +
   geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
+  geom_text_repel(aes(label = Factors),show_guide = FALSE, max.overlaps = 16) +
+  scale_x_continuous(limits = c(-0.01,0.08)) +
+  scale_y_continuous(limits = c(-0.001,0.016)) +
+  ggtitle("Graphique de Morris - Taux de morbidite (Sortie 1)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
   ggtitle("Taux de morbidité")
 
-# Deuxieme sortie : incidence finale
+
+# Deuxieme sortie : Incidence finale
 plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2, label = Factors)) +
   geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
+  geom_text_repel(aes(label = Factors),show_guide = FALSE, max.overlaps = 16) +
+  scale_x_continuous(limits = c(-0.02,0.25)) +
+  scale_y_continuous(limits = c(-0.001,0.1)) +
+  ggtitle("Graphique de Morris - Incidence finale (Sortie 2)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
   ggtitle("Incidence t=730")
 
-# Troisieme sortie : pic infectieux
+# Troisieme sortie : Pic infectieux
 plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3, label = Factors)) +
   geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
+  geom_text_repel(aes(label = Factors),show_guide = FALSE, max.overlaps = 16) +
+  scale_x_continuous(limits = c(-0.5,15)) +
+  scale_y_continuous(limits = c(-0.5,4.5)) +
+  ggtitle("Graphique de Morris - Pic infectieux (Sortie 3)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
   ggtitle("Pic infectieux")
 
-# Quatrieme sortie : prevalence premiere annee
+# Quatrieme sortie : Prevalence de la premiere annee
 plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4, label = Factors)) +
   geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
+  geom_text_repel(aes(label = Factors),show_guide = FALSE, max.overlaps = 16) +
+  scale_x_continuous(limits = c(-0.5,75)) +
+  scale_y_continuous(limits = c(-0.5,20)) +
+  ggtitle("Graphique de Morris - Prevalence de la premiere annee (Sortie 4)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
   ggtitle("Prévalence 1ère année")
-
 
 grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
 
@@ -87,9 +100,11 @@ par(mfrow = c(1, 1))
 # Moyenne des 4 sorties 
 ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) +
   geom_point() +
-  geom_text(hjust = 1.5, vjust = 1) +
+  geom_text_repel(aes(label = Factors),show_guide = FALSE, max.overlaps = 16) +
+  scale_x_continuous(limits = c(-0.5,20)) +
+  scale_y_continuous(limits = c(-0.5,6)) +
+  ggtitle("Graphique de Morris - Moyenne des 4 sorties (TRES PEU PERTINENT !!!)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_minimal() +
   ggtitle("Sensibilité moyenne")
-

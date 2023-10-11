@@ -10,7 +10,7 @@
 .) Ecrire le modèle modifié [B]
 .) Bibliographie unité du compartiment viral [B]
 .) Schéma incluant compartiment 'P' [B]
-.) Recentrer les graphiques de Morris [B]
+X) Recentrer les graphiques de Morris [B]
 
 
 ---- BOTH
