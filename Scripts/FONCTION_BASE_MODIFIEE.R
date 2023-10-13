@@ -157,7 +157,15 @@ parametres_initiaux <-  matrix(c(
   lat = 1 / 5,
   rec = 1 / 20,
   loss = 1 / 100,
-  madd = 0.001
+  madd = 0.001,
+  eta1 = 1/5,
+  eta2 = 1/20,
+  eta3 = 1/10,
+  mpath = 1/5,
+  trans2 = 0.1,
+  a1 = 0.2,
+  a2 = 0.5,
+  a3 = 0.1
 ), nrow = 1
 )
 
