@@ -48,9 +48,10 @@ df.etats <- melt(as.data.frame(df.etats), id.vars = "temps", variable.name = "et
 
 # Representation graphique avec ggplot2
 ggplot(data = df.etats) +
-  geom_line(aes(x = temps, y = effectif, col = etat), size = 0.7) +
+  geom_line(aes(x = temps, y = effectif, col = etat), linewidth = 0.7) +
   scale_color_manual(values = c("black","#CD69C9","#EE9A00","#66CDAA")) +
   labs(col = "Etat de sante") +
+  ggtitle("Effectif total de chaque etat de sante") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
   scale_y_continuous(name = "Effectifs", breaks = c(0,20,40,60,80)) +
   theme_minimal()
@@ -62,9 +63,10 @@ df.classes <- melt(as.data.frame(df.classes), id.vars = "temps", variable.name =
 
 # Representation graphique avec ggplot2
 ggplot(data = df.classes) +
-  geom_line(aes(x = temps, y = effectif, col = classe), size = 0.7) +
+  geom_line(aes(x = temps, y = effectif, col = classe), linewidth = 0.7) +
   scale_color_manual(values = c("royalblue2","orangered2","palegreen2")) +
   labs(col = "Classe d'age") +
+  ggtitle("Effectif total de chaque classe d'age") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
   scale_y_continuous(name = "Effectifs", limits = c(0,40), breaks = c(0,10,20,30,40)) +
   theme_minimal()
@@ -76,12 +78,13 @@ df.J <- melt(as.data.frame(df.J), id.vars = "temps", variable.name = "etat", val
 
 # Representation graphique avec ggplot2
 ggplot(data = df.J) +
-  geom_line(aes(x = temps, y = effectif, col = etat, linetype = etat), size = 0.7) +
+  geom_line(aes(x = temps, y = effectif, col = etat, linetype = etat), linewidth = 0.7) +
   scale_color_manual(values = c("royalblue1","royalblue2","royalblue3","royalblue4")) +
   scale_linetype_manual(values = c("solid","dotted","dashed","twodash")) +
   labs(col = "Etat de sante", linetype = "Etat de sante") +
+  ggtitle("Effectifs de chaque etat pour la classe d'age J") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
-  scale_y_continuous(name = "Effectifs", limits = c(0,30), breaks = c(0,10,20,30)) +
+  scale_y_continuous(name = "Effectifs", limits = c(0,38), breaks = c(0,10,20,30)) +
   theme_minimal()
 
 ## ... des effectifs de chaque etat pour la classe d'age A1
@@ -91,12 +94,13 @@ df.A1 <- melt(as.data.frame(df.A1), id.vars = "temps", variable.name = "etat", v
 
 # Representation graphique avec ggplot2
 ggplot(data = df.A1) +
-  geom_line(aes(x = temps, y = effectif, col = etat, linetype = etat), size = 0.7) +
+  geom_line(aes(x = temps, y = effectif, col = etat, linetype = etat), linewidth = 0.7) +
   scale_color_manual(values = c("orangered1","orangered2","orangered3","orangered4")) +
   scale_linetype_manual(values = c("solid","dotted","dashed","twodash")) +
   labs(col = "Etat de sante", linetype = "Etat de sante") +
+  ggtitle("Effectifs de chaque etat pour la classe d'age A1") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
-  scale_y_continuous(name = "Effectifs", limits = c(0,30), breaks = c(0,10,20,30)) +
+  scale_y_continuous(name = "Effectifs", limits = c(0,38), breaks = c(0,10,20,30)) +
   theme_minimal()
 
 ## ... des effectifs de chaque etat pour la classe d'age A2
@@ -106,12 +110,13 @@ df.A2 <- melt(as.data.frame(df.A2), id.vars = "temps", variable.name = "etat", v
 
 # Representation graphique avec ggplot2
 ggplot(data = df.A2) +
-  geom_line(aes(x = temps, y = effectif, col = etat, linetype = etat), size = 0.7) +
+  geom_line(aes(x = temps, y = effectif, col = etat, linetype = etat), linewidth = 0.7) +
   scale_color_manual(values = c("palegreen1","palegreen2","palegreen3","palegreen4")) +
   scale_linetype_manual(values = c("solid","dotted","dashed","twodash")) +
   labs(col = "Etat de sante", linetype = "Etat de sante") +
+  ggtitle("Effectifs de chaque etat pour la classe d'age A2") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
-  scale_y_continuous(name = "Effectifs", limits = c(0,30), breaks = c(0,10,20,30)) +
+  scale_y_continuous(name = "Effectifs", limits = c(0,38), breaks = c(0,10,20,30)) +
   theme_minimal()
 
 ## ... de l'incidence
@@ -123,7 +128,7 @@ df.incid <- data.frame("temps" = 1:(2*365), "incidence" = incidences)
 # Representation graphique sur ggplot2
 ggplot(data = df.incid) +
   geom_line(aes(x = temps, y = incidence), size = 0.7) +
-  scale_color_manual(values = c("#EE9A00")) +
+  ggtitle("Evolution de l'incidence journaliere en fonction du temps") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
   scale_y_continuous(name = "Incidence") +
   theme_minimal()
@@ -137,7 +142,8 @@ df.pl <- data.frame("temps" = 1:(2*365), "pathogene" = eff.pl)
 # Representation graphique sur ggplot2
 ggplot(data = df.pl) +
   geom_line(aes(x = temps, y = pathogene), size = 0.7) +
-  scale_color_manual(values = c("#659112")) +
+  ggtitle("Effectif des pathogènes libres dans l'environnement") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
   scale_y_continuous(name = "Effectifs pathogenes libres") +
   theme_minimal()
+

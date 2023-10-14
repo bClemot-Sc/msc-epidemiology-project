@@ -97,29 +97,20 @@ modAppli <- function(parametre){
       # classe d'age J
       # RQ : les naissances sont non-contaminantes, les nouveaux nes etant dans l'etat S
       N <- sum(MAT[4,,t]);	# taille de la pop en t
-      MAT[1,1,t+1] <- MAT[1,1,t]*(1-m1-t1-trans*MAT[4,3,t]/N) + loss*MAT[1,4,t] + max(0, sr*portee*(sum(MAT[2,,t])*f2 + sum(MAT[3,,t])*f3) * (1 - N/K))*
-                      ###################################
-                      + a1 * trans2 * MAT[1,1,t] * PL[t]; 
-                      ###################################
-      MAT[1,2,t+1] <- MAT[1,2,t]*(1-m1-t1-lat) + trans*MAT[1,1,t]*MAT[4,3,t]/N; 
+      MAT[1,1,t+1] <- MAT[1,1,t]*(1-m1-t1-trans*MAT[4,3,t]/N) + loss*MAT[1,4,t] + max(0, sr*portee*(sum(MAT[2,,t])*f2 + sum(MAT[3,,t])*f3) * (1 - N/K)) - a1 * trans2 * MAT[1,1,t] * PL[t]; 
+      MAT[1,2,t+1] <- MAT[1,2,t]*(1-m1-t1-lat) + trans*MAT[1,1,t]*MAT[4,3,t]/N + a1 * trans2 * MAT[1,1,t] * PL[t]; 
       MAT[1,3,t+1] <- MAT[1,3,t]*(1-m1-madd-t1-rec) + lat*MAT[1,2,t]; 
       MAT[1,4,t+1] <- MAT[1,4,t]*(1-m1-t1-loss) + rec*MAT[1,3,t]; 
       
       # classe d'age A1
-      MAT[2,1,t+1] <- MAT[1,1,t]*t1 + MAT[2,1,t]*(1-m2-t2-trans*MAT[4,3,t]/N) + loss*MAT[2,4,t]
-                      ###################################
-                      + a2 * trans2 * MAT[2,1,t] * PL[t]; 
-                      ###################################
-      MAT[2,2,t+1] <- MAT[1,2,t]*t1	+ MAT[2,2,t]*(1-m2-t2-lat) + trans*MAT[2,1,t]*MAT[4,3,t]/N;
+      MAT[2,1,t+1] <- MAT[1,1,t]*t1 + MAT[2,1,t]*(1-m2-t2-trans*MAT[4,3,t]/N) + loss*MAT[2,4,t] - a2 * trans2 * MAT[2,1,t] * PL[t]; 
+      MAT[2,2,t+1] <- MAT[1,2,t]*t1	+ MAT[2,2,t]*(1-m2-t2-lat) + trans*MAT[2,1,t]*MAT[4,3,t]/N + a2 * trans2 * MAT[2,1,t] * PL[t]; 
       MAT[2,3,t+1] <- MAT[1,3,t]*t1	+ MAT[2,3,t]*(1-m2-madd-t2-rec) + lat*MAT[2,2,t];
       MAT[2,4,t+1] <- MAT[1,4,t]*t1	+ MAT[2,4,t]*(1-m2-t2-loss) + rec*MAT[2,3,t];
       
       # classe d'age 3
-      MAT[3,1,t+1] <- MAT[2,1,t]*t2	+ MAT[3,1,t]*(1-m3-trans*MAT[4,3,t]/N) + loss*MAT[3,4,t];
-                      ###################################
-                      + a3 * trans2 * MAT[3,1,t] * PL[t]; 
-                      ###################################
-      MAT[3,2,t+1] <- MAT[2,2,t]*t2	+ MAT[3,2,t]*(1-m3-lat)	+ trans*MAT[3,1,t]*MAT[4,3,t]/N;
+      MAT[3,1,t+1] <- MAT[2,1,t]*t2	+ MAT[3,1,t]*(1-m3-trans*MAT[4,3,t]/N) + loss*MAT[3,4,t] - a3 * trans2 * MAT[3,1,t] * PL[t]; 
+      MAT[3,2,t+1] <- MAT[2,2,t]*t2	+ MAT[3,2,t]*(1-m3-lat)	+ trans*MAT[3,1,t]*MAT[4,3,t]/N + a3 * trans2 * MAT[3,1,t] * PL[t]; 
       MAT[3,3,t+1] <- MAT[2,3,t]*t2	+ MAT[3,3,t]*(1-m3-madd-rec) + lat*MAT[3,2,t];
       MAT[3,4,t+1] <- MAT[2,4,t]*t2	+ MAT[3,4,t]*(1-m3-loss) + rec*MAT[3,3,t];
       
@@ -207,14 +198,14 @@ ValNominale = c(
   rec = 1 / 20,
   loss = 1 / 100,
   madd = 0.001,
-  eta1 = 1/5,
-  eta2 = 1/20,
-  eta3 = 1/10,
+  eta1 = 1,
+  eta2 = 1/10,
+  eta3 = 1/5,
   mpath = 1/5,
   trans2 = 0.1,
-  a1 = 0.2,
-  a2 = 0.5,
-  a3 = 0.1
+  a1 = 0.8,
+  a2 = 0.1,
+  a3 = 0.2
 )
 
 ### Execution du modele

@@ -1,4 +1,5 @@
 #### Analyse de senibilite avec la methode Morris et le package 'sensitivity'
+#### Pour la modification du modele
 #_____________________________________________________________________________
 
 # PACKAGES
@@ -10,21 +11,21 @@ library(ggrepel)
 
 
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
-source("FONCTION_BASE.R")
+source("FONCTION_BASE_MODIFIEE.R")
 
 
 ## Analyse de sensibilite a partir de la fonction morris()
 AS.morris <- morris(
   model = modAppli,
-  factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd"),
+  factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd","eta1","eta2","eta3","mapth","trans","a1","a2","a3"),
   r = 100,
   design = list(
     type = 'oat',
     levels = 6,
     grid.jump = 3
   ),
-  binf = c(80,.4,0.0007,.00015, .000095, .000095,.0041,3,1/385,1/385,0.2,1/8,1/25,1/110,0.0005),
-  bsup = c(120, .6, .003, .00045, .0038, .0038, .01, 7, 1/340, 1/340, .4, 1/2, 1/15, 1/90, .0015)
+  binf = c(80,.4,0.0007,.00015, .000095, .000095,.0041,3,1/385,1/385,0.2,1/8,1/25,1/110,0.0005,1/5,1/15,2/15,1/8,0.01,0.7,0.01,0.1),
+  bsup = c(120, .6, .003, .00045, .0038, .0038, .01, 7, 1/340, 1/340, .4, 1/2, 1/15, 1/90, .0015,2,1/5,2/5,1/2,0.2,0.9,0.2,0.3)
 )
 
 
@@ -47,7 +48,7 @@ df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
 
 
 # Premiere sortie - Taux de morbidite
-plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1, label = Factors)) +
+ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1, label = Factors)) +
   geom_point() +
   geom_text_repel(aes(label = Factors),show_guide = FALSE, max.overlaps = 16) +
   scale_x_continuous(limits = c(-0.01,0.08)) +
