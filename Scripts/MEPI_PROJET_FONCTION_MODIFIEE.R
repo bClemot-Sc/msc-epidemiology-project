@@ -1,11 +1,33 @@
-# Fonction de base 
+### Modele dont la sensibilite doit etre analysee dans le cadre du projet MODE-MPI 2023-2024
+
+### Le modele est ici defini sous forme de fonction pour faciliter vos analyses de sensibilite (AS)
+### La fonction renvoie les sorties ponctuelles qui sont a analyser dans l'AS
+
 modAppli <- function(parametre){  
   
   # CONDITIONS DE SIMULATION
   temps = 2*365;  # Nombre de pas de temps en jours
   
   # Initialisation pour la sauvegarde de 4 sorties d'indicateurs epidemiologiques pour chaque jeu de parametres
-  sorties <- matrix(0, nrow = nrow(parametre), ncol = 4)
+  sorties <-
+    matrix(0,
+           nrow = nrow(parametre),
+           ncol = 4,
+           dimnames = list(c(paste0("scneario_", 1:nrow(parametre))),
+                           c("tx_morbidite", "incidence_t730", "pic_infectieux", "prevalence_annee_1")))
+  
+  
+  
+  # Initialisation pour la sauvegarde des matrices des effectifs par scenarios
+  sortie.MAT <- list()
+  
+  # Initialisation pour la sauvegarde des incidences journalieres
+  sortie.nvinf <- list()
+  
+  ####################################################################################################
+  ## Modification du modele - Initialisation pour la sauvegarde des effectifs des pathogenes libres ##
+  sortie.PL <- list()
+  ####################################################################################################
   
   # Boucle des scenarios, autant que de jeux de donnees
   for (i in 1:nrow(parametre)) { 
@@ -91,7 +113,6 @@ modAppli <- function(parametre){
       MAT[3,2,t+1] <- MAT[2,2,t]*t2	+ MAT[3,2,t]*(1-m3-lat)	+ trans*MAT[3,1,t]*MAT[4,3,t]/N + a3 * trans2 * MAT[3,1,t] * PL[t]; 
       MAT[3,3,t+1] <- MAT[2,3,t]*t2	+ MAT[3,3,t]*(1-m3-madd-rec) + lat*MAT[3,2,t];
       MAT[3,4,t+1] <- MAT[2,4,t]*t2	+ MAT[3,4,t]*(1-m3-loss) + rec*MAT[3,3,t];
-  
       
       # Calcule des effectifs totaux par etat de sante
       MAT[4,1,t+1] <- sum(MAT[1:3,1,t+1]);  #S
@@ -103,6 +124,7 @@ modAppli <- function(parametre){
       nvinf[t+1]   <- trans*MAT[4,1,t]*MAT[4,3,t]/N
       
     }  # fin boucle temps
+    
     
     
     
@@ -120,20 +142,47 @@ modAppli <- function(parametre){
     sortie4 <- sum(nvinf[1:365])
     
     # Integration des sorties ponctuelles a leur matrice de sortie
-    sorties[i,1] <- sortie1;  # tx morbidite
-    sorties[i,2] <- sortie2;  # incidence finale
-    sorties[i,3] <- sortie3;  # pic infectieux
-    sorties[i,4] <- sortie4;  # prevalence premiere annee
+    sorties[i,1] <- sortie1;
+    sorties[i,2] <- sortie2;
+    sorties[i,3] <- sortie3;
+    sorties[i,4] <- sortie4;
+    
+    # Integration des effectifs simules a leur liste de sortie
+    sortie.MAT[[i]] <- MAT
+    names(sortie.MAT)[i] <- paste0("scenario_", i)
+    
+    # Integration des incidences journalieres a leur matrice de sortie
+    sortie.nvinf[[i]] <- nvinf
+    names(sortie.nvinf)[i] <- paste0("scenario_", i)
+    
+    ####################################################
+    ## Integration des effectifs de Pathogenes libres ##
+    sortie.PL <- PL
+    ####################################################
     
   }  # Fin de la boucle de scenario
   
-  return(sorties)
   
-} 
+  
+  
+  
+  
+  # Output de la fonction :
+  # - Matrice des 4 Sorties ponctuelles
+  # - Matrice des effectifs par scenario
+  # - Vecteur des incidences journalieres
+  
+  return(list(indicateur_epidemio = sorties, n = sortie.MAT, incidence = sortie.nvinf,
+              #######################
+              pathogene = sortie.PL))
+              #######################
+  
+}  # Fin fonction
 
+# END
 
 #### Parametres initiaux du modele
-parametres_initiaux <-  matrix(c(
+ValNominale = c(
   K = 100,
   sr = 0.5,
   m1 = 0.0014,
@@ -157,6 +206,14 @@ parametres_initiaux <-  matrix(c(
   a1 = 0.8,
   a2 = 0.1,
   a3 = 0.2
-), nrow = 1
 )
+
+### Execution du modele
+PAR <- matrix(ValNominale, nrow = 1)
+Sorties <- modAppli(PAR)
+
+# Exemple de sortie
+Sorties$indicateur_epidemio  # indicateurs epidemiologiques par scenario
+Sorties$n$scenario_1   # scenario 1 de la liste n
+Sorties$incidence$scenario_1  # incidence / jour du scenario 1
 

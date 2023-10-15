@@ -8,6 +8,7 @@ library(latex2exp)
 library(gridExtra)
 library(ggrepel)
 
+
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
@@ -151,20 +152,4 @@ ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) 
 
 
 df.sorties$Factors_tex <- factor(x = df.sorties$Factors, labels = tex_label)
-
-
-
-# Générer un graphique avec des points aléatoires
-plot(x = rnorm(10), y = rnorm(10))
-
-# Obtenir les limites actuelles du graphique
-xlim <- par("usr")[1:2]
-ylim <- par("usr")[3:4]
-
-# Calculer les coordonnées du milieu du graphique
-x_mid <- mean(xlim)
-y_mid <- mean(ylim)
-
-# Ajouter le texte "Bonjour" au milieu du graphique
-text(x_mid, y_mid, TeX("$\\mu$"))
 
