@@ -8,6 +8,7 @@ library(latex2exp)
 library(gridExtra)
 library(ggrepel)
 
+
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
@@ -151,7 +152,6 @@ ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) 
 
 
 df.sorties$Factors_tex <- factor(x = df.sorties$Factors, labels = tex_label)
-
 
 
 # Générer un graphique avec des points aléatoires

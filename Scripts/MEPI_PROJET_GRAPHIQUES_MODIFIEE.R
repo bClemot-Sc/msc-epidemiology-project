@@ -1,7 +1,7 @@
 #### Representation graphique du comportement du modele
 
 ### Importation de la fonction et des packages
-source("MEPI_PROJET_FONCTION.r")
+source("MEPI_PROJET_FONCTION_MODIFIEE.r")
 library(ggplot2)
 library(reshape2)
 
@@ -127,8 +127,23 @@ df.incid <- data.frame("temps" = 1:(2*365), "incidence" = incidences)
 
 # Representation graphique sur ggplot2
 ggplot(data = df.incid) +
-  geom_line(aes(x = temps, y = incidence), linewidth = 0.7) +
+  geom_line(aes(x = temps, y = incidence), size = 0.7) +
   ggtitle("Evolution de l'incidence journaliere en fonction du temps") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
   scale_y_continuous(name = "Incidence") +
   theme_minimal()
+
+## ... des effectifs des pathogènes libres
+# Recuperation des incidences a partir de la sortie du modele
+eff.pl <- Sorties$pathogene
+# Creation du dataframe
+df.pl <- data.frame("temps" = 1:(2*365), "pathogene" = eff.pl)
+
+# Representation graphique sur ggplot2
+ggplot(data = df.pl) +
+  geom_line(aes(x = temps, y = pathogene), size = 0.7) +
+  ggtitle("Effectif des pathogènes libres dans l'environnement") +
+  scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
+  scale_y_continuous(name = "Effectifs pathogenes libres") +
+  theme_minimal()
+
