@@ -91,7 +91,7 @@ modAppli <- function(parametre){
       
       ###########################################################
       ## Modification du modele - Compartiment Pathogene Libre ##
-      PL[t+1] <- eta1 * MAT[1,3,t] + eta2 * MAT[2,3,t] + eta3 * MAT[3,3,t] - mpath * PL[t]
+      PL[t+1] <- PL[t] * (1-mpath) + eta1 * MAT[1,3,t] + eta2 * MAT[2,3,t] + eta3 * MAT[3,3,t]
       ###########################################################
       
       # classe d'age J
