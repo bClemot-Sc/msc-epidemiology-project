@@ -41,7 +41,7 @@ df$A1 <- df$A1S + df$A1E + df$A1I + df$A1R
 df$A2 <- df$A2S + df$A2E + df$A2I + df$A2R
 
 ### Representation graphique ...
-## ... de l'effectif total des etats de santé
+## ... de l'effectif total des etats de sant?
 # Reconfiguration du dataframe avec Reshape2
 df.etats <- df[,c("temps","S","E","I","R")]
 df.etats <- melt(as.data.frame(df.etats), id.vars = "temps", variable.name = "etat", value.name = "effectif")
@@ -133,7 +133,7 @@ ggplot(data = df.incid) +
   scale_y_continuous(name = "Incidence") +
   theme_minimal()
 
-## ... des effectifs des pathogènes libres
+## ... des effectifs des pathog?nes libres
 # Recuperation des incidences a partir de la sortie du modele
 eff.pl <- Sorties$pathogene
 # Creation du dataframe
@@ -142,8 +142,19 @@ df.pl <- data.frame("temps" = 1:(2*365), "pathogene" = eff.pl)
 # Representation graphique sur ggplot2
 ggplot(data = df.pl) +
   geom_line(aes(x = temps, y = pathogene), size = 0.7) +
-  ggtitle("Effectif des pathogènes libres dans l'environnement") +
+  ggtitle("Effectif des pathog?nes libres dans l'environnement") +
   scale_x_continuous(name = "Temps", breaks = c(0,150,300,450,600,750)) +
   scale_y_continuous(name = "Effectifs pathogenes libres") +
   theme_minimal()
 
+
+
+# ReprÃ©sentation 1Ã¨re annÃ©e
+ggplot(data = df.etats) +
+  geom_line(aes(x = temps, y = effectif, col = etat), linewidth = 0.7) +
+  scale_color_manual(values = c("black","#CD69C9","#EE9A00","#66CDAA")) +
+  labs(col = "Etat de sante") +
+  ggtitle("Effectif total de chaque etat de sante") +
+  scale_x_continuous(limits = c(0, 300), name = "Temps", breaks = c(0,150,300,450,600,750)) +
+  scale_y_continuous(name = "Effectifs", breaks = c(0,20,40,60,80)) +
+  theme_minimal()
