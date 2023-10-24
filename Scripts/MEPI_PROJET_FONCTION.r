@@ -116,10 +116,10 @@ modAppli <- function(parametre){
     sortie4 <- sum(nvinf[1:365])
     
     # Integration des sorties ponctuelles a leur matrice de sortie
-    sorties[i,1] <- sortie1;
-    sorties[i,2] <- sortie2;
-    sorties[i,3] <- sortie3;
-    sorties[i,4] <- sortie4;
+    sorties[i,1] <- sortie1; # Taux de moribité au jour 730
+    sorties[i,2] <- sortie2; # Incidence au jour 730
+    sorties[i,3] <- sortie3; # Pic infectieux
+    sorties[i,4] <- sortie4; # Prévalence 1ere année
     
     # Integration des effectifs simules a leur liste de sortie
     sortie.MAT[[i]] <- MAT
