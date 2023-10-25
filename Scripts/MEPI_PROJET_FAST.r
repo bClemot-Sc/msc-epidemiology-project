@@ -17,32 +17,24 @@ setwd("C:/Users/p_a_8/Documents/GitHub/MEPI-Projet/Scripts")  # PA
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
-# ANALYSE FAST
 
+# ANALYSE FAST ------------------------------------------------------------
+
+
+# INITIALISATION ----------------------------------------------------------
 # --- Noms des parametres
 names_para <- c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd")
 
 # --- Liste des parametres de distribution pour chaque parametre
-q.arg <- list(
-    list(min = 50, max = 150),
-    list(min = 0.3, max = 0.7),
-    list(min = 0.0007, max = 0.0028),
-    list(min = 0.00015, max = 0.00045),
-    list(min = 0.00094, max = 0.0038),
-    list(min = 0.00094, max = 0.0038),
-    list(min = 0.0041, max = 0.0164),
-    list(min = 2, max = 8),
-    list(min = 1/385, max = 1/345),
-    list(min = 1/385, max = 1/345),
-    list(min = 0.1, max = 0.5),
-    list(min = 1/8, max = 1/2),
-    list(min = 1/30, max = 1/10),
-    list(min = 1/150, max = 1/50),
-    list(min = 0.0005, max = 0.0015)
-)
+q.arg <-
+  apply(cbind(0.75 * unname(ValNominale),
+              1.25 * unname(ValNominale)),
+        MARGIN = 1,
+        function(x) {
+          list(min = x[1], max = x[2])
+        })
 
-
-
+# ANALYSE FAST ------------------------------------------------------------
 # FAST (100 iterations)
 # --- Generation des valeurs de parametres pour les differents scenarii 
 as_fast_100 <- sensitivity::fast99(model = NULL,
@@ -179,7 +171,7 @@ for (i in sample(1:15, size = 4)) {
   
 }
 
-# N = 10000
+# N = 1000
 sample_1000 <- as_fast_1000$X
 
 par(mfrow = c(2, 2))
@@ -230,3 +222,93 @@ for (i in 1:15) {
     )
   }
 }
+
+
+# 
+# # Visualisation théorique
+# as_fast_100 <- sensitivity::fast99(model = NULL,
+#                                    factors = names_para,
+#                                    n = 100, 
+#                                    q = "qunif",
+#                                    q.arg = q.arg)
+# 
+# as_fast_500 <- sensitivity::fast99(model = NULL,
+#                                    factors = names_para,
+#                                    n = 500, 
+#                                    q = "qunif",
+#                                    q.arg = q.arg)
+# 
+# as_fast_1000 <- sensitivity::fast99(model = NULL,
+#                                    factors = names_para,
+#                                    n = 1000, 
+#                                    q = "qunif",
+#                                    q.arg = q.arg)
+# 
+# sample_100 <- as_fast_100$X
+# sample_500 <- as_fast_500$X
+# sample_1000 <- as_fast_1000$X
+# 
+# i = sample(1:15, size = 1)
+# j = sample(1:15, size = 1)
+# 
+# par(mfrow = c(2, 3))
+# 
+# plot(
+#     sample_100[, i] ~ sample_100[, j],
+#     type = "p",
+#     main = "",
+#     xlab = "Paramètre i",
+#     ylab = "Paramètre j", 
+#     family = "serif",  cex = 0.2
+#     )
+#   
+# 
+# plot(
+#   sample_500[, i] ~ sample_500[, j],
+#   type = "p",
+#   main = "",
+#   xlab = "Paramètre i",
+#   ylab = "Paramètre j", 
+#   family = "serif",  cex = 0.2
+# )
+# 
+# plot(
+#   sample_1000[, i] ~ sample_1000[, j],
+#   type = "p",
+#   main = "",
+#   xlab = "Paramètre i",
+#   ylab = "Paramètre j", 
+#   family = "serif",  cex = 0.2
+# )
+# 
+# i = sample(1:15, size = 1)
+# j = sample(1:15, size = 1)
+# 
+# 
+# plot(
+#   sample_100[, i] ~ sample_100[, j],
+#   type = "p",
+#   main = "",
+#   xlab = "Paramètre k",
+#   ylab = "Paramètre l", 
+#   family = "serif",  cex = 0.2
+# )
+# 
+# 
+# plot(
+#   sample_500[, i] ~ sample_500[, j],
+#   type = "p",
+#   main = "",
+#   xlab = "Paramètre k",
+#   ylab = "Paramètre l", 
+#   family = "serif",  cex = 0.2
+# )
+# 
+# plot(
+#   sample_1000[, i] ~ sample_1000[, j],
+#   type = "p",
+#   main = "",
+#   xlab = "Paramètre k",
+#   ylab = "Paramètre l", 
+#   family = "serif",  cex = 0.2
+# )
