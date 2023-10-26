@@ -11,17 +11,10 @@ library(sensitivity)
 library(ggplot2)
 library(latex2exp)
 
-# WORKING DIRECTORY
-setwd("C:/Users/p_a_8/Documents/GitHub/MEPI-Projet/Scripts")  # PA
-
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
-
-# ANALYSE FAST ------------------------------------------------------------
-
-
-# INITIALISATION ----------------------------------------------------------
+# INITIALISATION 
 # --- Noms des parametres
 names_para <- c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd")
 
@@ -34,7 +27,7 @@ q.arg <-
           list(min = x[1], max = x[2])
         })
 
-# ANALYSE FAST ------------------------------------------------------------
+# ANALYSE FAST
 # FAST (100 iterations)
 # --- Generation des valeurs de parametres pour les differents scenarii 
 as_fast_100 <- sensitivity::fast99(model = NULL,
@@ -67,7 +60,7 @@ tell(x = fast_100_sortie4, y = sortie_100[,4])  # prevalence Aere annee
 # _________________________________________________________
 
 
-# FAST (10000 iterations)
+# FAST (1000 iterations)
 # --- Generation des valeurs de parametres pour les differents scenarii 
 as_fast_1000 <- sensitivity::fast99(model = NULL,
                                    factors = names_para,
