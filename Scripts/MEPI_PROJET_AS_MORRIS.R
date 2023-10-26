@@ -9,27 +9,36 @@ library(gridExtra)
 library(ggrepel)
 
 
+setwd("C:/Users/p_a_8/Documents/GitHub/MEPI-Projet/Scripts")  # PA
+
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
 
-## Analyse de sensibilite a partir de la fonction morris()
+# ANALYSE DE SENSIBILITE MORRIS -------------------------------------------
+# Création des bornes minmum et maximum
+bornes <- vector(mode = "list", length = 2)
+bornes[[1]] <- .75 * ValNominale  # borne inférieure
+bornes[[2]] <- 1.25 * ValNominale  # borne supérieure
+
+# Fonction morris
 AS.morris <- morris(
   model = modAppli,
   factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd"),
-  r = 100,
+  r = 100,  # Nombre d'itération
   design = list(
     type = 'oat',
     levels = 6,
     grid.jump = 3
   ),
-  binf <- c(50, .3, 0.0007, .00015, .00094, .00094, .0041, 2, 1/385, 1/385, 0.1, 1/8, 1/30, 1/150, 0.0005),
-  bsup <- c(150, .7, 0.0028, .00045, 0.0038, 0.0038, 0.0164, 8, 1/345, 1/345, 0.5, 1/2, 1/10, 1/50, 0.0015)
+  # Gamme de variation [min; max]
+  binf <- bornes[[1]],
+  bsup <- bornes[[2]]
 )
 
 
 
-## Exatraction des paranetres d'interet
+# --- Exatraction des paranetres d'interet
 # mu star
 mu.star <- apply(abs(AS.morris$ee), 3, function(M){apply(M, 2, mean)})
 # sigma
@@ -44,6 +53,9 @@ colnames(df.sorties) <- c("Factors","mu.star1","mu.star2","mu.star3","mu.star4",
 df.sorties$Moy.mu.star <- rowMeans(df.sorties[,2:5])
 df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
 
+
+
+# VISUALISATION GRAPHIQUE MU/SIGMA -----------------------------------------------------------
 # On remplace le nom des paramètres par leur symbole LaTeX
 tex_label <- c(
   TeX("$K$"),
@@ -56,7 +68,7 @@ tex_label <- c(
   TeX("$\\Theta$"),
   TeX("$\\tau_L$"),
   TeX("$tau_J$"),
-  TeX("$\\beta_1$"),
+  TeX("$\\beta$"),
   TeX("$\\sigma$"),
   TeX("$\\gamma$"),
   TeX("$\\lambda$"),
@@ -68,103 +80,166 @@ df.sorties["Factors_tex"] <- factor(x = df.sorties$Factors, levels = df.sorties$
 
 # Premiere sortie - Taux de morbidite
 plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1)) +
-  geom_point() +
-  geom_text_repel(aes(label = Factors_tex),show_guide = FALSE, max.overlaps = 5, parse = T) +  # parse sert à interpréter le code latex
-  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star1))) +
-  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma1))) +
+  geom_point(size = .7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 5,
+    parse = T,
+    size = 3, direction = "y"
+  ) +  # parse sert à interpréter le code latex
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star1) + .05*max(df.sorties$mu.star1))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma1) + .05*max(df.sorties$mu.star1))) +
   ggtitle("Graphique de Morris - Taux de morbidite (Sortie 1)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
-  ggtitle("Taux de morbidité")
-
+  ggtitle("Taux de morbidité t=730") +
+  theme(plot.title = element_text(size = 11)) # taille du titre
 
 # Deuxieme sortie : Incidence finale
 plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2)) +
-  geom_point() +
-  geom_text_repel(aes(label = Factors_tex),show_guide = FALSE, max.overlaps = 5, parse = T) +
-  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star2))) +
-  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma2))) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 9,
+    parse = T, size = 3, direction = "both"
+  ) +
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star2) + .05*max(df.sorties$mu.star2))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma2) + .05*max(df.sorties$mu.star2))) +
   ggtitle("Graphique de Morris - Incidence finale (Sortie 2)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
-  ggtitle("Incidence t=730")
+  ggtitle("Incidence t=730") +
+  theme(plot.title = element_text(size = 11)) # taille du titre
 
 # Troisieme sortie : Pic infectieux
 plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3)) +
-  geom_point() +
-  geom_text_repel(aes(label = Factors_tex),show_guide = FALSE, max.overlaps = 5, parse = T) +
-  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star3))) +
-  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma3))) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 5,
+    parse = T, size = 3, direction = "both"
+  ) +
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star3) + .06*max(df.sorties$mu.star3))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma3) + .06*max(df.sorties$mu.star3))) +
   ggtitle("Graphique de Morris - Pic infectieux (Sortie 3)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
-  ggtitle("Pic infectieux")
+  ggtitle("Pic infectieux") +
+  theme(plot.title = element_text(size = 11)) # taille du titre
 
 # Quatrieme sortie : Prevalence de la premiere annee
 plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4)) +
-  geom_point() +
-  geom_text_repel(aes(label = Factors_tex) ,show_guide = FALSE, max.overlaps = 5, parse = T) +
-  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star4))) +
-  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma4))) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex) ,
+    show_guide = FALSE,
+    max.overlaps = 7,
+    parse = T, size = 3, direction = "both"
+  ) + 
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star4) + .05*max(df.sorties$mu.star4))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma4)+ .05*max(df.sorties$mu.star4))) +
   ggtitle("Graphique de Morris - Prevalence de la premiere annee (Sortie 4)") +
   xlab(TeX("$\\mu^*$")) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
-  ggtitle("Prévalence 1ère année")
+  ggtitle("Prévalence 1ère année") +
+  theme(plot.title = element_text(size = 11)) # taille du titre
 
 grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
 
 
 
+# VISUALISATION ~ SORTIES -----------------------------------------------------------
+sample_morris <- AS.morris$X
+sorties_morris <- AS.morris$y
 
+plot(sorties_morris[,1] ~ sample_100[,1])
 
-
-# MOYENNE
-par(mfrow = c(1, 1))
-ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma)) +
-  geom_point() +
-  geom_text_repel(aes(label = Factors_tex) ,show_guide = FALSE, max.overlaps = 5, parse = T) +
-  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star4))) +
-  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma4))) +
-  ggtitle("Graphique de Morris - Moyenne des 4 sorties") +
-  xlab(TeX("$\\mu^*$")) +
-  ylab(TeX("$\\sigma$")) +
-  theme_minimal() +
-  ggtitle("Prévalence 1ère année")
+length(sample_100[,1])
 
 
 
 
 
-ggplot(data = df.sorties, aes(x = Moy.mu.star, y = Moy.sigma, label = Factors)) +
-  geom_point() +
-  geom_text_repel(aes(label = Factors_tex),show_guide = FALSE, max.overlaps = 16, parse = T) +
-  scale_x_continuous(limits = c(-0.5,20)) +
-  scale_y_continuous(limits = c(-0.5,6)) +
-  ggtitle("Graphique de Morris - Moyenne des 4 sorties (TRES PEU PERTINENT !!!)") +
-  xlab(TeX("$\\mu^*$")) +
-  ylab(TeX("$\\sigma$")) +
-  theme_minimal() +
-  ggtitle("Sensibilité moyenne")
 
 
-df.sorties$Factors_tex <- factor(x = df.sorties$Factors, labels = tex_label)
+
+# VISUALISATION THEORIQUE -------------------------------------------------
+# Echantillonnage théorie
+par(mfrow=c(1,1))
+plot(
+  NULL,
+  ylim = c(0, 11),
+  xlim = c(44, 91),
+  main = NULL,
+  xlab = "Paramètre i",
+  ylab = "Paramètre j", family = "serif")
+
+lines(y = c(2.8, 2.8), x = c(47, 57), col = "red", lwd = 2)
+lines(x = c(57, 57), y = c(2.8, 4.6), col = "red", lwd = 2)
+
+lines(y = c(4.6, 4.6), x = c(67, 77), col = "blue", lwd = 2)
+lines(x = c(77, 77), y = c(4.6, 6.4), col = "blue", lwd = 2)
+
+lines(x = c(57, 57), y = c(6.4, 8.2), col = "green", lwd = 2)
+lines(x = c(57, 67), y = c(8.2, 8.2), col = "green", lwd = 2)
 
 
-# Générer un graphique avec des points aléatoires
-plot(x = rnorm(10), y = rnorm(10))
+for(j in seq(47, 90, 10)){
+  for(i in seq(1, 10, length.out = 6)){
+    points(x = j, y = i, pch = 19)
+  }
+}
 
-# Obtenir les limites actuelles du graphique
-xlim <- par("usr")[1:2]
-ylim <- par("usr")[3:4]
 
-# Calculer les coordonnées du milieu du graphique
-x_mid <- mean(xlim)
-y_mid <- mean(ylim)
 
-# Ajouter le texte "Bonjour" au milieu du graphique
-text(x_mid, y_mid, TeX("$\\mu$"))
+# Répartition espace de points 2 à 2
+par(mfrow = c(1 , 1))
+plot(
+  sample_morris[, 1] ~ sample_morris[,4],
+  main = NULL,
+  xlab = "Paramètre i",
+  ylab = "Paramètre j",
+  family = "serif")
 
+library(rgl)
+plot3d(x = sample_morris[, 1],
+       y = sample_morris[, 2],
+       z = sample_morris[, 11],
+       xlab = TeX("K"),
+       ylab = TeX("\\phi"),
+       zlab = TeX("\\beta"), 
+       cex.lab = 6,
+       pch = 19,
+       size = 5,  # taille des points
+       )
+
+
+# Distribution des valeurs testées
+par(mfrow = c(2, 2))
+for (i in 1:15) {
+  hist(
+    sample_morris[, i],
+    col = "white",
+    freq = T,
+    border = "black",
+    breaks = 6,
+    xlab = "",
+    main = colnames(sample_morris)[i],
+    family = "serif"
+  )
+}
