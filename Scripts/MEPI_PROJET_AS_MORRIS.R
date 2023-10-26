@@ -166,17 +166,7 @@ grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
 # VISUALISATION ~ SORTIES -----------------------------------------------------------
 sample_morris <- AS.morris$X
 sorties_morris <- AS.morris$y
-
-plot(sorties_morris[,1] ~ sample_100[,1])
-
-length(sample_100[,1])
-
-
-
-
-
-
-
+colnames(sample_morris) <- tex_label
 
 # VISUALISATION THEORIQUE -------------------------------------------------
 # Echantillonnage théorie
@@ -216,6 +206,7 @@ plot(
   ylab = "Paramètre j",
   family = "serif")
 
+# Répartition espace de point 3*3
 library(rgl)
 plot3d(x = sample_morris[, 1],
        y = sample_morris[, 2],
@@ -230,8 +221,26 @@ plot3d(x = sample_morris[, 1],
 
 
 # Distribution des valeurs testées
+tex_label <- c(
+  "$K$",
+  "$\\psi$",
+  "$m_L$",
+  "$m_J$",
+  "$m_A$",
+  "$f_J$",
+  "$f_A$",
+  "$\\Theta$",
+  "$\\tau_L$",
+  "$tau_J$",
+  "$\\beta$",
+  "$\\sigma$",
+  "$\\gamma$",
+  "$\\lambda$",
+  "$\\mu$"
+)
+
 par(mfrow = c(2, 2))
-for (i in 1:15) {
+for (i in sample(x = 1:15, size = 15, replace = F)) {
   hist(
     sample_morris[, i],
     col = "white",
@@ -239,7 +248,8 @@ for (i in 1:15) {
     border = "black",
     breaks = 6,
     xlab = "",
-    main = colnames(sample_morris)[i],
+    main = TeX(tex_label[i]),
     family = "serif"
   )
 }
+
