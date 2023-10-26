@@ -208,6 +208,7 @@ ValNominale = c(
   a3 = 0.5
 )
 
+
 ### Execution du modele
 PAR <- matrix(ValNominale, nrow = 1)
 Sorties <- modAppli(PAR)

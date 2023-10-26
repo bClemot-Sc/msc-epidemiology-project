@@ -133,7 +133,7 @@ modAppli <- function(parametre){
 
 
 #### Parametres initiaux du modele
-parametres_initiaux <-  matrix(c(
+ValNominale <-c(
   K = 100,
   sr = 0.5,
   m1 = 0.0014,
@@ -150,13 +150,12 @@ parametres_initiaux <-  matrix(c(
   loss = 1 / 100,
   madd = 0.001,
   eta1 = 1,
-  eta2 = 1/10,
-  eta3 = 1/5,
-  mpath = 1/5,
-  trans2 = 0.1,
-  a1 = 0.8,
-  a2 = 0.1,
-  a3 = 0.2
-), nrow = 1
+  eta2 = 0.1,
+  eta3 = 0.2,
+  mpath = 1/58,
+  trans2 = 0.02,
+  a1 = 1,
+  a2 = 0.4,
+  a3 = 0.5
 )
 
