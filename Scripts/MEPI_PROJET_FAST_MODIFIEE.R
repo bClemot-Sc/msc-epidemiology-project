@@ -1,4 +1,5 @@
 #### Analyse de senibilite avec la methode FAST et le package 'sensitivity'
+#### POUR LE MODELE MODIFIEE
 #_____________________________________________________________________________
 
 # RESSOURCES
@@ -12,7 +13,7 @@ library(ggplot2)
 library(latex2exp)
 
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
-source("FONCTION_BASE.R")
+source("FONCTION_BASE_MODIFIEE.R")
 
 
 # ANALYSE FAST ------------------------------------------------------------
@@ -20,7 +21,7 @@ source("FONCTION_BASE.R")
 
 # INITIALISATION ----------------------------------------------------------
 # --- Noms des parametres
-names_para <- c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd")
+names_para <- c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd","eta1","eta2","eta3","mpath","trans2","a1","a2","a3")
 
 # --- Liste des parametres de distribution pour chaque parametre
 q.arg <-
@@ -35,10 +36,10 @@ q.arg <-
 # FAST (100 iterations)
 # --- Generation des valeurs de parametres pour les differents scenarii 
 as_fast_100 <- sensitivity::fast99(model = NULL,
-                    factors = names_para,
-                    n = 100, 
-                    q = "qunif",
-                    q.arg = q.arg)
+                                   factors = names_para,
+                                   n = 100, 
+                                   q = "qunif",
+                                   q.arg = q.arg)
 
 
 
@@ -67,10 +68,10 @@ tell(x = fast_100_sortie4, y = sortie_100[,4])  # prevalence Aere annee
 # FAST (10000 iterations)
 # --- Generation des valeurs de parametres pour les differents scenarii 
 as_fast_1000 <- sensitivity::fast99(model = NULL,
-                                   factors = names_para,
-                                   n = 1000, 
-                                   q = "qunif",
-                                   q.arg = q.arg)
+                                    factors = names_para,
+                                    n = 1000, 
+                                    q = "qunif",
+                                    q.arg = q.arg)
 
 
 # --- On run le modele modAppli sur ces valeurs
@@ -132,7 +133,15 @@ tex_label <- c(
   TeX("$\\sigma$"),
   TeX("$\\gamma$"),
   TeX("$\\lambda$"),
-  TeX("$\\mu$")
+  TeX("$\\mu$"),
+  TeX("$\\eta_L$"),
+  TeX("$\\eta_J$"),
+  TeX("$\\eta_A$"),
+  TeX("$\\m_P$"),
+  TeX("$\\beta_2$"),
+  TeX("$\\alpha_L$"),
+  TeX("$\\alpha_J$"),
+  TeX("$\\alpha_A$")
 )
 
 # Indice de sensibilité par paramètre -----------------

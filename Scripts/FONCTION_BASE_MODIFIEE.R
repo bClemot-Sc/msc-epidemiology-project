@@ -133,7 +133,7 @@ modAppli <- function(parametre){
 
 
 #### Parametres initiaux du modele
-ValNominale <- c(
+ValNominale <-c(
   K = 100,
   sr = 0.5,
   m1 = 0.0014,
@@ -153,7 +153,7 @@ ValNominale <- c(
   eta2 = 0.1,
   eta3 = 0.2,
   mpath = 1/58,
-  trans2 = 0.003,
+  trans2 = 0.02,
   a1 = 1,
   a2 = 0.4,
   a3 = 0.5

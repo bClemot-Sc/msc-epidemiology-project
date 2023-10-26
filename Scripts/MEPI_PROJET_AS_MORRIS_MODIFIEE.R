@@ -66,7 +66,7 @@ tex_label <- c(
   TeX("$\\Theta$"),
   TeX("$\\tau_L$"),
   TeX("$tau_J$"),
-  TeX("$\\beta$"),
+  TeX("$\\beta_1$"),
   TeX("$\\sigma$"),
   TeX("$\\gamma$"),
   TeX("$\\lambda$"),

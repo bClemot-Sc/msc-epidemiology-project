@@ -194,7 +194,7 @@ modalites <- c(
   "$\\Theta$",
   "$\\tau_L$",
   "$tau_J$",
-  "$\\beta$",
+  "$\\beta_1$",
   "$\\sigma$",
   "$\\gamma$",
   "$\\lambda$",
