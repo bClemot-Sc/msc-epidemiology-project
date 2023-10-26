@@ -97,13 +97,27 @@ tell(x = fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
 
 # VISUALISATION -----------------------------------------------------------
 # --- Version modifiee de la fonction plot du package fast99()
-plot.fast99 <- function(x, ylim = c(0, 1), main = NULL, names.arg = NULL, ...) {
-  S <- rbind(x$D1 / x$V, 1 - x$Dt / x$V - x$D1 / x$V)
-  colnames(S) <- colnames(x$X)
-  bar.col <- c("white","grey")
-  barplot(S, ylim = ylim, col = bar.col, main = main, names.arg = names.arg)
-  # legend("topright", c("main effect", "interactions"), fill = bar.col)
-}
+plot.fast99 <-
+  function(x,
+           ylim = c(0, 1),
+           main = NULL,
+           names.arg = NULL,
+           ...) {
+    S <- rbind(x$D1 / x$V, 1 - x$Dt / x$V - x$D1 / x$V)
+    colnames(S) <- colnames(x$X)
+    bar.col <- c("white", "grey")
+    barplot(
+      S,
+      ylim = ylim,
+      col = bar.col,
+      main = main,
+      names.arg = names.arg,
+      family = "serif",
+      cex.axis = 1.4, cex.main = 1.7
+      
+    )
+    # legend("topright", c("main effect", "interactions"), fill = bar.col)
+  }
 
 # Noms modifiés des paramètres 
 tex_label <- c(
@@ -125,19 +139,17 @@ tex_label <- c(
 )
 
 # Indice de sensibilité par paramètre -----------------
-par(mfrow = c(2, 2))
-plot.fast99(fast_100_sortie1, main = "Taux de morbidite (n=100)", names.arg = tex_label)
-plot.fast99(fast_1000_sortie1, main = "Taux de morbidite (n=1000)", names.arg = tex_label)
+x11(width = 14)  # Largeur de la fenêtre
+par(mfrow = c(2, 4))
+plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie2, main = "Incidence (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie3, main = "Pic infectieux", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie4, main = "Prevalence 1ère année", names.arg = tex_label, family = "serif")
 
-plot.fast99(fast_100_sortie2, main = "Incidence t=730 (n=100)", names.arg = tex_label)
-plot.fast99(fast_1000_sortie2, main = "Incidence t=730 (n=1000)", names.arg = tex_label)
-
-plot.fast99(fast_100_sortie3, main = "Pic infectieux (n=100)", names.arg = tex_label)
-plot.fast99(fast_1000_sortie3, main = "Pic infectieux (n=1000)", names.arg = tex_label)
-
-plot.fast99(fast_100_sortie4, main = "Prevalence 1ere annee (n=100)", names.arg = tex_label)
-plot.fast99(fast_1000_sortie4, main = "Prevalence 1ere annee (n=1000)", names.arg = tex_label)
-
+plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie2, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie3, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie4, main = "", names.arg = tex_label, family = "serif")
 
 
 # Echantillonnage --------------------

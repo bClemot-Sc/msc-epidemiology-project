@@ -20,6 +20,9 @@ for (i in 1:length(ValNominale)) {
                                     length.out = 10)
 }
 
+
+
+
 # Visualisation échantillonnage
 par(mfrow=c(1,1))
 plot(

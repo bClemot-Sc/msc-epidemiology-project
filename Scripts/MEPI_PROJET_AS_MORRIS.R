@@ -37,32 +37,6 @@ AS.morris <- morris(
 )
 
 
-# Visualisation échantillonnage
-par(mfrow=c(1,1))
-plot(
-  NULL,
-  ylim = c(0, 11),
-  xlim = c(44, 91),
-  main = NULL,
-  xlab = "Paramètre i",
-  ylab = "Paramètre j", family = "serif")
-
-lines(y = c(2.8, 2.8), x = c(47, 57), col = "red", lwd = 2)
-lines(x = c(57, 57), y = c(2.8, 4.6), col = "red", lwd = 2)
-
-lines(y = c(4.6, 4.6), x = c(67, 77), col = "blue", lwd = 2)
-lines(x = c(77, 77), y = c(4.6, 6.4), col = "blue", lwd = 2)
-
-lines(x = c(57, 57), y = c(6.4, 8.2), col = "green", lwd = 2)
-lines(x = c(57, 67), y = c(8.2, 8.2), col = "green", lwd = 2)
-
-
-for(j in seq(47, 90, 10)){
-  for(i in seq(1, 10, length.out = 6)){
-    points(x = j, y = i, pch = 19)
-  }
-}
-
 
 # --- Exatraction des paranetres d'interet
 # mu star
@@ -196,3 +170,76 @@ sorties_morris <- AS.morris$y
 plot(sorties_morris[,1] ~ sample_100[,1])
 
 length(sample_100[,1])
+
+
+
+
+
+
+
+
+# VISUALISATION THEORIQUE -------------------------------------------------
+# Echantillonnage théorie
+par(mfrow=c(1,1))
+plot(
+  NULL,
+  ylim = c(0, 11),
+  xlim = c(44, 91),
+  main = NULL,
+  xlab = "Paramètre i",
+  ylab = "Paramètre j", family = "serif")
+
+lines(y = c(2.8, 2.8), x = c(47, 57), col = "red", lwd = 2)
+lines(x = c(57, 57), y = c(2.8, 4.6), col = "red", lwd = 2)
+
+lines(y = c(4.6, 4.6), x = c(67, 77), col = "blue", lwd = 2)
+lines(x = c(77, 77), y = c(4.6, 6.4), col = "blue", lwd = 2)
+
+lines(x = c(57, 57), y = c(6.4, 8.2), col = "green", lwd = 2)
+lines(x = c(57, 67), y = c(8.2, 8.2), col = "green", lwd = 2)
+
+
+for(j in seq(47, 90, 10)){
+  for(i in seq(1, 10, length.out = 6)){
+    points(x = j, y = i, pch = 19)
+  }
+}
+
+
+
+# Répartition espace de points 2 à 2
+par(mfrow = c(1 , 1))
+plot(
+  sample_morris[, 1] ~ sample_morris[,4],
+  main = NULL,
+  xlab = "Paramètre i",
+  ylab = "Paramètre j",
+  family = "serif")
+
+library(rgl)
+plot3d(x = sample_morris[, 1],
+       y = sample_morris[, 2],
+       z = sample_morris[, 11],
+       xlab = TeX("K"),
+       ylab = TeX("\\phi"),
+       zlab = TeX("\\beta"), 
+       cex.lab = 6,
+       pch = 19,
+       size = 5,  # taille des points
+       )
+
+
+# Distribution des valeurs testées
+par(mfrow = c(2, 2))
+for (i in 1:15) {
+  hist(
+    sample_morris[, i],
+    col = "white",
+    freq = T,
+    border = "black",
+    breaks = 6,
+    xlab = "",
+    main = colnames(sample_morris)[i],
+    family = "serif"
+  )
+}
