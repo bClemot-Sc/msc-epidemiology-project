@@ -1,54 +1,56 @@
+#####  OAT STANDARD  -------------------------------------------
+
 # Packages
-# install.packages("sensibility")
 library(sensitivity)
 library(ggplot2)
-library(latex2exp)
-library(numDeriv)
 library(tidyverse)
-library(latex2exp)
-library(viridis)
+library(latex2exp)  # Texte latex
+
 
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
-#####  OAT STANDARD  -------------------------------------------
 
 # INITIALISATION ----------------------------------------------------------
-# Gammes de variations  (10 valeurs par paramètres)
-gamme_params <- 
-  list(
-    K = seq(from = 50, to = 150, length.out = 10),  # 100
-    sr = seq(from = 0.3, to = 0.7, length.out = 10),  # 0.5
-    m1 = seq(from = 0.0007, to = 0.0028, length.out = 10),  # 0.0014 
-    m2 = seq(from = 0.00015, to = 0.00045, length.out = 10),  # 0.00029
-    m3 = seq(from = 0.00094, to = 0.0038, length.out = 10),  # 0.0019
-    f2 = seq(from = 0.00094, to = 0.0038, length.out = 10),   # 0.0019
-    f3 = seq(from = 0.0041, to = 0.0164, length.out = 10),   # 0.0082 
-    portee = seq(from = 2, to = 8, length.out = 10),  # 5 
-    t1 = seq(from = 1/385, to = 1/345, length.out = 10),  # 1 / 365
-    t2 = seq(from = 1/385, to = 1/345, length.out = 10),  # 1 / 365
-    
-    trans =  seq(from = 0.1, to = 0.5, length.out = 10),  # 0.3
-    lat =  seq(from = 1/8, to = 1/2, length.out = 10),  # 1 / 5
-    rec =  seq(from = 1/30, to = 1/10, length.out = 10),  # 1 / 20
-    loss = seq(from = 1/150, to = 1/50, length.out = 10),  # 1 / 100
-    madd = seq(from = 0.0005, to = 0.0015, length.out = 10) # 0.001
-  )
+# Gamme de variation de chaque paramètre 
+gamme_params <- vector(mode = "list", length = 15)
+for (i in 1:length(ValNominale)) {
+  gamme_params[[i]] <- seq(from = 0.75 * ValNominale[i], 
+                                    to = 1.25 * ValNominale[i], 
+                                    length.out = 10)
+}
 
-# --- Variable contenant les noms des paramètres
-names_para <- names(gamme_params)
+
+
+
+# Visualisation échantillonnage
+par(mfrow=c(1,1))
+plot(
+  NULL,
+  ylim = c(0, 11),
+  xlim = c(44, 91),
+  main = NULL,
+  xlab = "Paramètre i",
+  ylab = "Paramètre j", family = "serif")
+
+points(y = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), x = rep((44+91)/2, 10), pch = 19)
+points(x = seq(45, 90, length.out = 10), y = rep((0+11)/2, 10), pch = 19)
+
+
+# Variable contenant les noms des paramètres
+names_para <- names(ValNominale)
   
 # Matrice avec en ligne les scenarii non-modifiés et en colonne les paramètres
 mat_scenarios <-
   matrix(
-    data = parametres_initiaux,
+    data = ValNominale,
     nrow = 15 * 10,
     ncol = 15,
     dimnames = list(paste0("scenario", 1:(15 * 10)), names_para),
     byrow = T
   )
 
-# --- Implementation des scenarii modifiés 
+# Implementation des scenarii modifiés 
 ligne <- 1
 
 for (i in 1:length(gamme_params)){
@@ -64,8 +66,8 @@ oat <- modAppli(mat_scenarios)
 dimnames(oat) <- list(c(1:150), c("tx_morbidite", "incidence_t730", "pic_infectieux", "prevalence_annee_1"))
 
 # On modélise avec les paramètres de référence le modèle m0
-m0 <- modAppli(parametres_initiaux)
-
+m0 <- modAppli(matrix(ValNominale, nrow = 1))
+ 
 
 
 # OAT STANDARD : CALCUL SENSIBILITE ---------------------------------------
@@ -76,6 +78,7 @@ list_as <- apply(
   
   # Indice de sensibilite = (output_initial - output_modifie_i) / (output_initial + output_modifie_i)
   FUN = function(x){abs(m0 - x)/(x + m0)}  
+  
 )
 
 list_as <- t(list_as)  # on transpose le dataframe
@@ -139,7 +142,7 @@ ggplot(data = as_mean_gg, aes(x = factor(params, levels = names_para), y = mean,
                 position = position_dodge(width = 0.6), width = 0.3, lwd = 0.8) +
   theme_classic() +
   xlab(NULL) +
-  facet_wrap(~indicateur, ncol = 2, nrow = 2, scales = "free_x",  labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1ère année", tx_morbidite = "Taux de morbidité (t=730)"))) + # Facetter par "indicateur"
+  facet_wrap(~indicateur, ncol = 2, nrow = 2, scales = "free",  labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1ère année", tx_morbidite = "Taux de morbidité (t=730)"))) + # Facetter par "indicateur"
   # theme(strip.text = element_blank() +  # Enlève labels des facettes
   ylab("Indice de sensibilité") +
   ylim(c(0, max(as_mean_gg$mean + as_se_gg$se))) +
@@ -166,20 +169,13 @@ ggplot(data = as_mean_gg, aes(x = factor(params, levels = names_para), y = mean,
 
 # EFFET PARAMETRES --------------------------------------------------------
 oat <- as.data.frame(oat)
-oat <- as.data.frame(apply(X = oat, MARGIN = 2,FUN =  scale))
 
-# --- Centrage / réduction pour l'axe des y
-# i = 1
-# for(param in 1:15){
-#   for(sorties in 1:4){
-#     oat[i:(param * 10), sorties] <- scale(oat[i:(param * 10), sorties], center = T, scale = T)
-#   }
-#   i = i + 10
-# }
-
+# -- Normalisation entre 0 et 1 par sortie
+normalized <-  function(x){(x-min(x))/(max(x)-min(x))}  #Fait varier les valeurs entre 0 et 1
+oat[1:4] <- apply(X = oat[1:4], MARGIN = 2, FUN = normalized)
 
 # --- Noms paramètres
-oat["params"] <- rep(c(
+modalites <- c(
   "$K$",
   "$\\psi$",
   "$m_L$",
@@ -195,28 +191,12 @@ oat["params"] <- rep(c(
   "$\\gamma$",
   "$\\lambda$",
   "$\\mu$"
-), each = 10)
+)
 
-oat$params <- as.factor(oat$params)
+oat["params"] <- rep(modalites, each = 10)
 
-levels(oat$params) <- 
-  c(
-    TeX("$K$"),
-    TeX("$\\psi$"),
-    TeX("$m_L$"),
-    TeX("$m_J$"),
-    TeX("$m_A$"),
-    TeX("$f_J$"),
-    TeX("$f_A$"),
-    TeX("$\\Theta$"),
-    TeX("$\\tau_L$"),
-    TeX("$tau_J$"),
-    TeX("$\\beta$"),
-    TeX("$\\sigma$"),
-    TeX("$\\gamma$"),
-    TeX("$\\lambda$"),
-    TeX("$\\mu$")
-  )
+# --- Modalités en expression LateX
+oat$params <- factor(TeX(oat$params), levels = TeX(modalites))
 
 
 oat["index"] <- rep(1:10, 15)
@@ -231,21 +211,23 @@ oat_gg$sortie <-
       "incidence_t730",
       "pic_infectieux",
       "prevalence_annee_1"
-    )
+    ),
+    labels = c("Taux morbidité (t=730)", "Incidence (t=730)", "Pic infectieux", "Prévalence 1ère année" )
   )
 
 
 for(i in levels(oat_gg$params)){
   print(ggplot(data = oat_gg[oat_gg$params == i,], mapping = aes(x = index, y = as)) +
-    facet_wrap(~sortie, ncol = 2, nrow = 2, scales = "free_y",  labeller = labeller(sortie = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1ère année", tx_morbidite = "Taux de morbidité (t=730)"))) + # Facetter par "indicateur"
+    facet_wrap(~sortie, ncol = 2, nrow = 2, scales = "free_y") + # Facetter par "indicateur"
     geom_line() +
     theme_classic() +
     scale_x_continuous(breaks = 1:10) +
     xlab(TeX(i)) +
-    ylab("Indice de sensibilité")
+    ylab("Valeur de sortie")
   )
 }
 
+j = 1
 for(i in levels(oat_gg$sortie)){
   print(
     ggplot(data = oat_gg[oat_gg$sortie == i,], mapping = aes(x = index, y = as)) +
@@ -256,12 +238,14 @@ for(i in levels(oat_gg$sortie)){
           scale_x_continuous(breaks = 1:10) +
           scale_y_continuous(breaks = NULL) +  # Remove y-axis values
           xlab(TeX(i)) +
-          ylab("Indice de sensibilité")
+          ylab("Valeur de sortie") +
+          xlab(levels(oat_gg$sortie)[j])
   )
+  j = j + 1
 }
   
 
 
 # --- Exemple interaction
-# plot(oat[oat$params == "$\\lambda$", 1] ~  oat[oat$params == "$\\beta$", 1], type = "l")
+#plot(oat[oat$params == "\\lambda", 1] ~  oat[oat$params == "\\beta", 1], type = "l")
      
