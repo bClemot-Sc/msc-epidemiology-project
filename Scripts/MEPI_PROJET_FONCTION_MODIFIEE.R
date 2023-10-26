@@ -199,14 +199,15 @@ ValNominale = c(
   loss = 1 / 100,
   madd = 0.001,
   eta1 = 1,
-  eta2 = 1/10,
-  eta3 = 1/5,
-  mpath = 1/3,
-  trans2 = 0.01,
-  a1 = 0.8,
-  a2 = 0.5,
-  a3 = 0.2
+  eta2 = 0.1,
+  eta3 = 0.2,
+  mpath = 1/58,
+  trans2 = 0.003,
+  a1 = 1,
+  a2 = 0.4,
+  a3 = 0.5
 )
+
 
 ### Execution du modele
 PAR <- matrix(ValNominale, nrow = 1)
