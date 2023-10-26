@@ -8,9 +8,6 @@ library(latex2exp)
 library(gridExtra)
 library(ggrepel)
 
-
-setwd("C:/Users/p_a_8/Documents/GitHub/MEPI-Projet/Scripts")  # PA
-
 # IMPORTATION FONCTION DE BASE ET DES VALEURS INITIALES
 source("FONCTION_BASE.R")
 
@@ -38,7 +35,7 @@ AS.morris <- morris(
 
 
 
-# --- Exatraction des paranetres d'interet
+# --- Extraction des parametres d'interet
 # mu star
 mu.star <- apply(abs(AS.morris$ee), 3, function(M){apply(M, 2, mean)})
 # sigma
