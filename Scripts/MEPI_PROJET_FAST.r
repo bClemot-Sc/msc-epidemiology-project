@@ -98,12 +98,13 @@ for (i in 1:4) {
     col = "#DCE1EA",
     freq = T,
     border = "black",
-    xlab = "",
+    xlab = NULL,
+    ylab = NULL,
     main = labels_sorties[i],
     family = "serif",
-    cex.lab = 1.6,
-    cex.axis = 1.7,
-    cex.main = 1.7
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 2.4
   )
 }
 
@@ -116,14 +117,28 @@ for (i in 1:4) {
     col = "#DCE1EA",
     freq = T,
     border = "black",
-    xlab = "",
+    xlab = NULL,
+    ylab = NULL,
     main = labels_sorties[i],
     family = "serif",
-    cex.lab = 1.6,
-    cex.axis = 1.7,
-    cex.main = 1.7
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 2.4
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # VISUALISATION -----------------------------------------------------------
@@ -183,56 +198,84 @@ plot.fast99(fast_1000_sortie3, main = "", names.arg = tex_label, family = "serif
 plot.fast99(fast_1000_sortie4, main = "", names.arg = tex_label, family = "serif")
 
 
-# Echantillonnage --------------------
-
-# as_fast_100_scale <- apply(as_fast_100$X, 2, FUN = function(x) scale(x, center = T, scale = T))
-# as_fast_1000_scale <- apply(as_fast_1000$X, 2, FUN = function(x) scale(x, center = T, scale = T))
-# 
-# # plot(
-#   NULL,
-#   type = "l",
-#   ylab = "Valeur du paramètre",
-#   xlab = "Scénario",
-#   ylim = c(min(as_fast_100_scale), max(as_fast_100_scale)),
-#   xlim = c(0, nrow(as_fast_100_scale))
-# )
-
-
-# N = 100
+# ECHANTILLONNAGE --------------------
+# Valeur des paramètres
 sample_100 <- as_fast_100$X
-
-par(mfrow = c(2, 2))
-for (i in sample(1:15, size = 4)) {
-  j = sample(1:15, size = 1)
-  plot(
-    sample_100[, i] ~ sample_100[, j],
-    type = "p",
-    ylab = paste0(colnames(sample_100)[i]),
-    xlab = paste0(colnames(sample_100)[j]),
-    main = paste0(colnames(sample_100)[i], " vs ", colnames(sample_100)[j])
-  )
-  
-}
-
-# N = 1000
 sample_1000 <- as_fast_1000$X
 
-par(mfrow = c(2, 2))
-for (i in sample(1:15, size = 4)) {
-  j = sample(1:15, size = 1)
+tex_label <- c(
+  "$K$",
+  "$\\psi$",
+  "$m_L$",
+  "$m_J$",
+  "$m_A$",
+  "$f_J$",
+  "$f_A$",
+  "$\\Theta$",
+  "$\\tau_L$",
+  "$tau_J$",
+  "$\\beta$",
+  "$\\sigma$",
+  "$\\gamma$",
+  "$\\lambda$",
+  "$\\mu$"
+)
+
+colnames(sample_100) <- tex_label
+colnames(sample_1000) <- tex_label
+
+par(mfrow = c(2, 3))
+
+i = c(1, 6, 15)
+j = c(8, 14, 11)
+
+# 100
+for(k in 1:3){
   plot(
-    sample_1000[, i] ~ sample_1000[, j],
+    sample_100[, i[k]] ~ sample_100[, j[k]],
     type = "p",
-    ylab = paste0(colnames(sample_1000)[i]),
-    xlab = paste0(colnames(sample_1000)[j]),
-    main = paste0(colnames(sample_1000)[i], " vs ", colnames(sample_1000)[j])
+    main = NULL,
+    xlab = TeX(colnames(sample_100)[j[k]]),
+    ylab = TeX(colnames(sample_100)[i[k]]),
+    family = "serif",
+    cex = 0.01,
+    cex.lab = 1.5,
+    cex.axis = 1.5
   )
-  
 }
 
-apply(X = sample_1000, MARGIN = 2, FUN = function(x) length(unique(x)))
+title(
+  outer = T,
+  adj = 0.52,
+  line = -3,
+  main = "(a) 100",
+  font.main = 2,
+  cex.main = 1.5
+)
 
+# 1000
+for(k in 1:3){
+  plot(
+    sample_1000[, i[k]] ~ sample_1000[, j[k]],
+    type = "p",
+    main = NULL,
+    xlab = TeX(colnames(sample_1000)[j[k]]),
+    ylab = TeX(colnames(sample_1000)[i[k]]),
+    family = "serif",
+    cex = 0.01,
+    cex.lab = 1.5,
+    cex.axis = 1.5
+  )
+}
 
+title(
+  outer = T,
+  adj = 0.52,
+  line = -21,
+  main = "(b) 1000",
+  font.main = 2,
+  cex.main = 1.5
+)
 
 
 
@@ -268,90 +311,27 @@ for (i in 1:15) {
 
 
 
-# Visualisation théorique
-as_fast_100 <- sensitivity::fast99(model = NULL,
-                                   factors = names_para,
-                                   n = 100,
-                                   q = "qunif",
-                                   q.arg = q.arg)
-
+# VISUALISATION THEORIQUE
 as_fast_500 <- sensitivity::fast99(model = NULL,
                                    factors = names_para,
                                    n = 500,
                                    q = "qunif",
                                    q.arg = q.arg)
 
-as_fast_1000 <- sensitivity::fast99(model = NULL,
-                                   factors = names_para,
-                                   n = 1000,
-                                   q = "qunif",
-                                   q.arg = q.arg)
-# 
-sample_100 <- as_fast_100$X
 sample_500 <- as_fast_500$X
-sample_1000 <- as_fast_1000$X
+
+colnames(sample_500) <- tex_label
+
 
 i = sample(1:15, size = 1)
 j = sample(1:15, size = 1)
 
-par(mfrow = c(2, 3))
-
-plot(
-    sample_100[, i] ~ sample_100[, j],
-    type = "p",
-    main = "",
-    xlab = "Paramètre i",
-    ylab = "Paramètre j",
-    family = "serif",  cex = 0.2
-    )
-
-
+par(mfrow = c(1, 1))
 plot(
   sample_500[, i] ~ sample_500[, j],
   type = "p",
-  main = "",
+  main = NULL,
   xlab = "Paramètre i",
   ylab = "Paramètre j",
-  family = "serif",  cex = 0.2
-)
-
-plot(
-  sample_1000[, i] ~ sample_1000[, j],
-  type = "p",
-  main = "",
-  xlab = "Paramètre i",
-  ylab = "Paramètre j",
-  family = "serif",  cex = 0.2
-)
-
-i = sample(1:15, size = 1)
-j = sample(1:15, size = 1)
-
-
-plot(
-  sample_100[, i] ~ sample_100[, j],
-  type = "p",
-  main = "",
-  xlab = "Paramètre k",
-  ylab = "Paramètre l",
-  family = "serif",  cex = 0.2
-)
-
-
-plot(
-  sample_500[, i] ~ sample_500[, j],
-  type = "p",
-  main = "",
-  xlab = "Paramètre k",
-  ylab = "Paramètre l",
-  family = "serif",  cex = 0.2
-)
-
-plot(
-  sample_1000[, i] ~ sample_1000[, j],
-  type = "p",
-  main = "",
-  xlab = "Paramètre k",
-  ylab = "Paramètre l",
-  family = "serif",  cex = 0.2
+  family = "serif",  cex = 0.1, cex.lab = 1.5, cex.axis = 1.2
 )
