@@ -143,12 +143,13 @@ for (i in 1:4) {
     col = "#DCE1EA",
     freq = T,
     border = "black",
-    xlab = "",
+    xlab = NULL,
+    ylab = NULL,
     main = labels_sorties[i],
     family = "serif",
-    cex.lab = 1.6,
+    cex.lab = 2,
     cex.axis = 1.7,
-    cex.main = 1.7
+    cex.main = 2.4
   )
 }
 
@@ -230,6 +231,10 @@ for(i in levels(oat_gg$sortie)){
 
 
 
+
+
+
+
 # VISUALISATION THEORIQUE -------------------------------------------------
 # Visualisation échantillonnage
 par(mfrow=c(1,1))
@@ -238,8 +243,9 @@ plot(
   ylim = c(0, 11),
   xlim = c(44, 91),
   main = NULL,
-  xlab = "Paramètre i",
-  ylab = "Paramètre j", family = "serif")
+  xlab = TeX("$\\phi$"),
+  ylab = TeX("$\\beta$"),
+  family = "serif")
 
 points(y = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10), x = rep((44+91)/2, 10), pch = 19)
 points(x = seq(45, 90, length.out = 10), y = rep((0+11)/2, 10), pch = 19)

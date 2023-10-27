@@ -68,12 +68,13 @@ for (i in 1:4) {
     col = "#DCE1EA",
     freq = T,
     border = "black",
-    xlab = "",
+    xlab = NULL,
+    ylab = NULL,
     main = labels_sorties[i],
     family = "serif",
-    cex.lab = 1.6,
-    cex.axis = 1.7,
-    cex.main = 1.7
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 2.4
   )
 }
 
@@ -195,29 +196,14 @@ colnames(sample_morris) <- tex_label
 # Echantillonnage théorie
 par(mfrow=c(1,1))
 plot(
-  NULL,
-  ylim = c(0, 11),
-  xlim = c(44, 91),
+  sample_morris[, 2],
+  sample_morris[, 11],
   main = NULL,
-  xlab = "Paramètre i",
-  ylab = "Paramètre j", family = "serif")
-
-lines(y = c(2.8, 2.8), x = c(47, 57), col = "red", lwd = 2)
-lines(x = c(57, 57), y = c(2.8, 4.6), col = "red", lwd = 2)
-
-lines(y = c(4.6, 4.6), x = c(67, 77), col = "blue", lwd = 2)
-lines(x = c(77, 77), y = c(4.6, 6.4), col = "blue", lwd = 2)
-
-lines(x = c(57, 57), y = c(6.4, 8.2), col = "green", lwd = 2)
-lines(x = c(57, 67), y = c(8.2, 8.2), col = "green", lwd = 2)
-
-
-for(j in seq(47, 90, 10)){
-  for(i in seq(1, 10, length.out = 6)){
-    points(x = j, y = i, pch = 19)
-  }
-}
-
+  xlab = TeX("$\\phi$"),
+  ylab = TeX("$\\beta$"),
+  family = "serif",
+  cex.lab = 1.1,
+  pch = 19)
 
 
 # Répartition espace de points 2 à 2
@@ -241,7 +227,6 @@ plot3d(x = sample_morris[, 1],
        pch = 19,
        size = 5,  # taille des points
        )
-
 
 # Distribution des valeurs testées
 tex_label <- c(
