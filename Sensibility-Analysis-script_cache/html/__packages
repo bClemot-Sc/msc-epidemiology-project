@@ -1,10 +1,3 @@
-base
-methods
-datasets
-utils
-grDevices
-graphics
-stats
 ggplot2
 reshape2
 gridExtra
@@ -18,3 +11,4 @@ dplyr
 stringr
 forcats
 latex2exp
+ggrepel
