@@ -106,6 +106,8 @@ for (i in 1:4) {
     cex.axis = 2,
     cex.main = 2.4
   )
+  abline(v = m0[i], lty = 2, col = "red")
+  
 }
 
 x11(width = 14)
@@ -125,6 +127,8 @@ for (i in 1:4) {
     cex.axis = 2,
     cex.main = 2.4
   )
+  abline(v = m0[i], lty = 2, col = "red")
+  
 }
 
 
@@ -159,7 +163,11 @@ plot.fast99 <-
       main = main,
       names.arg = names.arg,
       family = "serif",
-      cex.axis = 1.4, cex.main = 1.7
+      ylab = "Indice de sensibilité",
+      cex.axis = 1.7,
+      cex = 1.5,
+      cex.lab = 1.6,
+      cex.main = 1.8
       
     )
     # legend("topright", c("main effect", "interactions"), fill = bar.col)
@@ -186,17 +194,32 @@ tex_label <- c(
 
 # Indice de sensibilité par paramètre -----------------
 x11(width = 14)  # Largeur de la fenêtre
-par(mfrow = c(2, 4))
-plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
+par(mfrow = c(2, 3))
+# plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
 plot.fast99(fast_100_sortie2, main = "Incidence (t=730)", names.arg = tex_label, family = "serif")
 plot.fast99(fast_100_sortie3, main = "Pic infectieux", names.arg = tex_label, family = "serif")
 plot.fast99(fast_100_sortie4, main = "Prevalence 1ère année", names.arg = tex_label, family = "serif")
+title(
+  outer = T,
+  adj = .0255,
+  line = -2,
+  main = "(a) 100",
+  font.main = 2,
+  cex.main = 1.5
+)
 
-plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
+# plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
 plot.fast99(fast_1000_sortie2, main = "", names.arg = tex_label, family = "serif")
 plot.fast99(fast_1000_sortie3, main = "", names.arg = tex_label, family = "serif")
 plot.fast99(fast_1000_sortie4, main = "", names.arg = tex_label, family = "serif")
-
+title(
+  outer = T,
+  adj = .0255,
+  line = -34,
+  main = "(b) 1000",
+  font.main = 2,
+  cex.main = 1.5
+)
 
 # ECHANTILLONNAGE --------------------
 # Valeur des paramètres
