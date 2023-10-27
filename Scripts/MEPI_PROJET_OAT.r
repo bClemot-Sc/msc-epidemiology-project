@@ -109,7 +109,8 @@ ggplot(data = bauer_gg, aes(x = factor(params, levels = names_para), y = indice,
   ylab("Indice de sensibilité") +
   ylim(c(0, max(bauer_gg$indice))) +
   scale_fill_manual(values=c("#ffffff","#CD0000"), name=NULL) +
-  theme(legend.position = "none") +
+  theme(legend.position = "none",
+        text = element_text(size = 14, family = "serif")) +
   scale_x_discrete(labels = c(
     TeX("$K$"),
     TeX("$\\psi$"),
@@ -151,13 +152,12 @@ for (i in 1:4) {
     cex.axis = 1.7,
     cex.main = 2.4
   )
+  abline(v = m0[i], lty = 2, col = "red")
 }
 
 
 # EFFET PARAMETRES --------------------------------------------------------
 # -- Normalisation entre 0 et 1 par sortie
-normalized <-  function(x){(x-min(x))/(max(x)-min(x))}  #Fait varier les valeurs entre 0 et 1
-oat[1:4] <- apply(X = oat[1:4], MARGIN = 2, FUN = normalized)
 
 # --- Noms paramètres
 modalites <- c(

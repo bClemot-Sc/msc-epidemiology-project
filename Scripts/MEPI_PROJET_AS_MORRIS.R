@@ -73,6 +73,8 @@ for (i in 1:4) {
     cex.axis = 2,
     cex.main = 2.4
   )
+  abline(v = m0[i], lty = 2, col = "red")
+  
 }
 
 # VISUALISATION GRAPHIQUE MU/SIGMA -----------------------------------------------------------
@@ -108,7 +110,7 @@ plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1)) +
     show_guide = FALSE,
     max.overlaps = 5,
     parse = T,
-    size = 3, direction = "y"
+    size = 5, direction = "y"
   ) +  # parse sert à interpréter le code latex
   scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star1) + .05*max(df.sorties$mu.star1))) +
   scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma1) + .05*max(df.sorties$mu.star1))) +
@@ -117,7 +119,7 @@ plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1)) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
   ggtitle("Taux de morbidité t=730") +
-  theme(plot.title = element_text(size = 11)) # taille du titre
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
 
 # Deuxieme sortie : Incidence finale
 plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2)) +
@@ -128,7 +130,7 @@ plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2)) +
     aes(label = Factors_tex),
     show_guide = FALSE,
     max.overlaps = 9,
-    parse = T, size = 3, direction = "both"
+    parse = T, size = 5, direction = "both"
   ) +
   scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star2) + .05*max(df.sorties$mu.star2))) +
   scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma2) + .05*max(df.sorties$mu.star2))) +
@@ -137,7 +139,7 @@ plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2)) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
   ggtitle("Incidence t=730") +
-  theme(plot.title = element_text(size = 11)) # taille du titre
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
 
 # Troisieme sortie : Pic infectieux
 plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3)) +
@@ -148,7 +150,7 @@ plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3)) +
     aes(label = Factors_tex),
     show_guide = FALSE,
     max.overlaps = 5,
-    parse = T, size = 3, direction = "both"
+    parse = T, size = 5, direction = "both"
   ) +
   scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star3) + .06*max(df.sorties$mu.star3))) +
   scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma3) + .06*max(df.sorties$mu.star3))) +
@@ -157,7 +159,7 @@ plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3)) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
   ggtitle("Pic infectieux") +
-  theme(plot.title = element_text(size = 11)) # taille du titre
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
 
 # Quatrieme sortie : Prevalence de la premiere annee
 plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4)) +
@@ -168,7 +170,7 @@ plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4)) +
     aes(label = Factors_tex) ,
     show_guide = FALSE,
     max.overlaps = 7,
-    parse = T, size = 3, direction = "both"
+    parse = T, size = 5, direction = "both"
   ) + 
   scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star4) + .05*max(df.sorties$mu.star4))) +
   scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma4)+ .05*max(df.sorties$mu.star4))) +
@@ -177,8 +179,9 @@ plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4)) +
   ylab(TeX("$\\sigma$")) +
   theme_classic() +
   ggtitle("Prévalence 1ère année") +
-  theme(plot.title = element_text(size = 11)) # taille du titre
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
 
+x11(width = 11, height = 9)
 grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
 
 
