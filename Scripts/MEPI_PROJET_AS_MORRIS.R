@@ -55,6 +55,28 @@ df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
 
 
 
+# DISTRIBUTION DES SORTIES DU MODELES -------------------------------------
+AS.morris_y <- as.data.frame(AS.morris$y)
+labels_sorties <- c("Taux morbidité (t=730)", "Incidence (t=730)", "Pic infectieux", "Prévalence 1ère année" )
+
+x11(width = 14)
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    AS.morris_y[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = "",
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 1.6,
+    cex.axis = 1.7,
+    cex.main = 1.7
+  )
+}
+
 # VISUALISATION GRAPHIQUE MU/SIGMA -----------------------------------------------------------
 # On remplace le nom des paramètres par leur symbole LaTeX
 tex_label <- c(
@@ -167,6 +189,7 @@ grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
 sample_morris <- AS.morris$X
 sorties_morris <- AS.morris$y
 colnames(sample_morris) <- tex_label
+
 
 # VISUALISATION THEORIQUE -------------------------------------------------
 # Echantillonnage théorie

@@ -85,7 +85,45 @@ tell(x = fast_1000_sortie3, y = sortie_1000[,3])  # pic infectieux
 tell(x = fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
 
 
+# DISTRIBUTION DES SORTIES DU MODELES -------------------------------------
+# Fast (n=100)
+labels_sorties <- c("Taux morbidité (t=730)", "Incidence (t=730)", "Pic infectieux", "Prévalence 1ère année" )
 
+x11(width = 14)
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    sortie_100[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = "",
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 1.6,
+    cex.axis = 1.7,
+    cex.main = 1.7
+  )
+}
+
+x11(width = 14)
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    sortie_1000[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = "",
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 1.6,
+    cex.axis = 1.7,
+    cex.main = 1.7
+  )
+}
 
 
 # VISUALISATION -----------------------------------------------------------
@@ -229,91 +267,91 @@ for (i in 1:15) {
 }
 
 
+
+# Visualisation théorique
+as_fast_100 <- sensitivity::fast99(model = NULL,
+                                   factors = names_para,
+                                   n = 100,
+                                   q = "qunif",
+                                   q.arg = q.arg)
+
+as_fast_500 <- sensitivity::fast99(model = NULL,
+                                   factors = names_para,
+                                   n = 500,
+                                   q = "qunif",
+                                   q.arg = q.arg)
+
+as_fast_1000 <- sensitivity::fast99(model = NULL,
+                                   factors = names_para,
+                                   n = 1000,
+                                   q = "qunif",
+                                   q.arg = q.arg)
 # 
-# # Visualisation théorique
-# as_fast_100 <- sensitivity::fast99(model = NULL,
-#                                    factors = names_para,
-#                                    n = 100, 
-#                                    q = "qunif",
-#                                    q.arg = q.arg)
-# 
-# as_fast_500 <- sensitivity::fast99(model = NULL,
-#                                    factors = names_para,
-#                                    n = 500, 
-#                                    q = "qunif",
-#                                    q.arg = q.arg)
-# 
-# as_fast_1000 <- sensitivity::fast99(model = NULL,
-#                                    factors = names_para,
-#                                    n = 1000, 
-#                                    q = "qunif",
-#                                    q.arg = q.arg)
-# 
-# sample_100 <- as_fast_100$X
-# sample_500 <- as_fast_500$X
-# sample_1000 <- as_fast_1000$X
-# 
-# i = sample(1:15, size = 1)
-# j = sample(1:15, size = 1)
-# 
-# par(mfrow = c(2, 3))
-# 
-# plot(
-#     sample_100[, i] ~ sample_100[, j],
-#     type = "p",
-#     main = "",
-#     xlab = "Paramètre i",
-#     ylab = "Paramètre j", 
-#     family = "serif",  cex = 0.2
-#     )
-#   
-# 
-# plot(
-#   sample_500[, i] ~ sample_500[, j],
-#   type = "p",
-#   main = "",
-#   xlab = "Paramètre i",
-#   ylab = "Paramètre j", 
-#   family = "serif",  cex = 0.2
-# )
-# 
-# plot(
-#   sample_1000[, i] ~ sample_1000[, j],
-#   type = "p",
-#   main = "",
-#   xlab = "Paramètre i",
-#   ylab = "Paramètre j", 
-#   family = "serif",  cex = 0.2
-# )
-# 
-# i = sample(1:15, size = 1)
-# j = sample(1:15, size = 1)
-# 
-# 
-# plot(
-#   sample_100[, i] ~ sample_100[, j],
-#   type = "p",
-#   main = "",
-#   xlab = "Paramètre k",
-#   ylab = "Paramètre l", 
-#   family = "serif",  cex = 0.2
-# )
-# 
-# 
-# plot(
-#   sample_500[, i] ~ sample_500[, j],
-#   type = "p",
-#   main = "",
-#   xlab = "Paramètre k",
-#   ylab = "Paramètre l", 
-#   family = "serif",  cex = 0.2
-# )
-# 
-# plot(
-#   sample_1000[, i] ~ sample_1000[, j],
-#   type = "p",
-#   main = "",
-#   xlab = "Paramètre k",
-#   ylab = "Paramètre l", 
-#   family = "serif",  cex = 0.2
-# )
+sample_100 <- as_fast_100$X
+sample_500 <- as_fast_500$X
+sample_1000 <- as_fast_1000$X
+
+i = sample(1:15, size = 1)
+j = sample(1:15, size = 1)
+
+par(mfrow = c(2, 3))
+
+plot(
+    sample_100[, i] ~ sample_100[, j],
+    type = "p",
+    main = "",
+    xlab = "Paramètre i",
+    ylab = "Paramètre j",
+    family = "serif",  cex = 0.2
+    )
+
+
+plot(
+  sample_500[, i] ~ sample_500[, j],
+  type = "p",
+  main = "",
+  xlab = "Paramètre i",
+  ylab = "Paramètre j",
+  family = "serif",  cex = 0.2
+)
+
+plot(
+  sample_1000[, i] ~ sample_1000[, j],
+  type = "p",
+  main = "",
+  xlab = "Paramètre i",
+  ylab = "Paramètre j",
+  family = "serif",  cex = 0.2
+)
+
+i = sample(1:15, size = 1)
+j = sample(1:15, size = 1)
+
+
+plot(
+  sample_100[, i] ~ sample_100[, j],
+  type = "p",
+  main = "",
+  xlab = "Paramètre k",
+  ylab = "Paramètre l",
+  family = "serif",  cex = 0.2
+)
+
+
+plot(
+  sample_500[, i] ~ sample_500[, j],
+  type = "p",
+  main = "",
+  xlab = "Paramètre k",
+  ylab = "Paramètre l",
+  family = "serif",  cex = 0.2
+)
+
+plot(
+  sample_1000[, i] ~ sample_1000[, j],
+  type = "p",
+  main = "",
+  xlab = "Paramètre k",
+  ylab = "Paramètre l",
+  family = "serif",  cex = 0.2
+)
