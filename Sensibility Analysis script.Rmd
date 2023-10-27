@@ -12,12 +12,14 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Importation des packages
 
 ```{r message=FALSE, warning=FALSE}
-library(ggplot2)
+library(tidyverse)
 library(reshape2)
 library(gridExtra)
+library(ggplot2)
+library(ggrepel)
 library(sensitivity)
-library(tidyverse)
 library(latex2exp)
+set.seed(485451)
 ```
 
 ## Fonction de simulation du modèle
@@ -587,7 +589,6 @@ ggplot(data = bauer_gg, aes(x = factor(params, levels = names_para), y = indice,
 oat <- as.data.frame(oat, makes_name = T)
 labels_sorties <- c("Taux morbidité (t=730)", "Incidence (t=730)", "Pic infectieux", "Prévalence 1ère année" )
 
-x11(width = 14)
 par(mfrow = c(1, 4))
 line<-par(lwd=2)
 for (i in 1:4) {
@@ -608,7 +609,7 @@ for (i in 1:4) {
 }
 ```
 
-
+### Représentation graphique de l'effet des paramètres
 
 ```{r, echo = FALSE, cache=TRUE}
 # Normalisation entre 0 et 1 par sortie
@@ -671,3 +672,1084 @@ for(i in levels(oat_gg$sortie)){
 }
 ```
 
+## Analyse de sensibilité : Morris
+
+### Analyse
+
+```{r, cache=TRUE}
+# Création des bornes minmum et maximum
+bornes <- vector(mode = "list", length = 2)
+bornes[[1]] <- .75 * ValNominale  # borne inférieure
+bornes[[2]] <- 1.25 * ValNominale  # borne supérieure
+
+# Fonction morris
+AS.morris <- morris(
+  model = modAppli,
+  factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd"),
+  r = 100,  # Nombre d'itération
+  design = list(
+    type = 'oat',
+    levels = 6,
+    grid.jump = 3
+  ),
+  # Gamme de variation [min; max]
+  binf <- bornes[[1]],
+  bsup <- bornes[[2]]
+)
+```
+
+```{r, echo=FALSE}
+## Extraction des paramètres d'intérêt
+# mu star
+mu.star <- apply(abs(AS.morris$ee), 3, function(M){apply(M, 2, mean)})
+# sigma
+sigma <- apply(AS.morris$ee, 3, function(M){apply(M, 2, sd)})
+
+
+# Dataframe
+df.sorties <- data.frame(AS.morris$factors, mu.star, sigma, row.names = NULL)
+colnames(df.sorties) <- c("Factors","mu.star1","mu.star2","mu.star3","mu.star4","sigma1","sigma2","sigma3","sigma4")
+
+# Moyenne des sensibilites des 4 sorties
+df.sorties$Moy.mu.star <- rowMeans(df.sorties[,2:5])
+df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
+```
+
+### Diagrammes de Morris
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# On remplace le nom des paramètres par leur symbole LaTeX
+tex_label <- c(
+  TeX("$K$"),
+  TeX("$\\psi$"),
+  TeX("$m_L$"),
+  TeX("$m_J$"),
+  TeX("$m_A$"),
+  TeX("$f_J$"),
+  TeX("$f_A$"),
+  TeX("$\\Theta$"),
+  TeX("$\\tau_L$"),
+  TeX("$tau_J$"),
+  TeX("$\\beta$"),
+  TeX("$\\sigma$"),
+  TeX("$\\gamma$"),
+  TeX("$\\lambda$"),
+  TeX("$\\mu$")
+)
+
+df.sorties["Factors_tex"] <- factor(x = df.sorties$Factors, levels = df.sorties$Factors, labels = tex_label)  # Nouvelle variable avec expression latex
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# Premiere sortie - Taux de morbidite
+plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1)) +
+  geom_point(size = .7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 5,
+    parse = T,
+    size = 5, direction = "y"
+  ) +  # parse sert à interpréter le code latex
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star1) + .05*max(df.sorties$mu.star1))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma1) + .05*max(df.sorties$mu.star1))) +
+  ggtitle("Graphique de Morris - Taux de morbidite (Sortie 1)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Taux de morbidité t=730") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+# Deuxieme sortie : Incidence finale
+plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 9,
+    parse = T, size = 5, direction = "both"
+  ) +
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star2) + .05*max(df.sorties$mu.star2))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma2) + .05*max(df.sorties$mu.star2))) +
+  ggtitle("Graphique de Morris - Incidence finale (Sortie 2)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Incidence t=730") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+# Troisieme sortie : Pic infectieux
+plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 5,
+    parse = T, size = 5, direction = "both"
+  ) +
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star3) + .06*max(df.sorties$mu.star3))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma3) + .06*max(df.sorties$mu.star3))) +
+  ggtitle("Graphique de Morris - Pic infectieux (Sortie 3)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Pic infectieux") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+# Quatrieme sortie : Prevalence de la premiere annee
+plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex) ,
+    show_guide = FALSE,
+    max.overlaps = 7,
+    parse = T, size = 5, direction = "both"
+  ) + 
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star4) + .05*max(df.sorties$mu.star4))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma4)+ .05*max(df.sorties$mu.star4))) +
+  ggtitle("Graphique de Morris - Prevalence de la premiere annee (Sortie 4)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Prévalence 1ère année") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
+```
+
+## Analyse de sensibilité : FAST
+
+### Analyse pour 100 itérations
+
+```{r}
+## Initialisation
+# Noms des parametres
+names_para <- c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd")
+
+# Liste des parametres de distribution pour chaque parametre
+q.arg <-
+  apply(cbind(0.75 * unname(ValNominale),
+              1.25 * unname(ValNominale)),
+        MARGIN = 1,
+        function(x) {
+          list(min = x[1], max = x[2])
+        })
+```
+
+```{r, cache=TRUE}
+## ANALYSE FAST
+# FAST (100 iterations)
+# Generation des valeurs de parametres pour les differents scenarii 
+as_fast_100 <- sensitivity::fast99(model = NULL,
+                    factors = names_para,
+                    n = 100, 
+                    q = "qunif",
+                    q.arg = q.arg)
+
+
+
+# On run le modele modAppli sur ces valeurs
+sortie_100 <- modAppli(as_fast_100$X)
+colnames(sortie_100) <- c("taux morbidité", "incidence t=730", "pic infectieux", "prévalene 1ère année")
+
+
+# Calcul des variances et indices de Sobol pour chaque sortie pour chaque sortie du modele
+fast_100_sortie1 <- as_fast_100
+fast_100_sortie2 <- as_fast_100
+fast_100_sortie3 <- as_fast_100
+fast_100_sortie4 <- as_fast_100
+
+# (tell() calcul à partir des scenarii les indices de Sobol et complète l'objet 'incomplet' x)
+tell(x = fast_100_sortie1, y = sortie_100[,1])  # taux de morbidite
+tell(x = fast_100_sortie2, y = sortie_100[,2])  # incidence t=730
+tell(x = fast_100_sortie3, y = sortie_100[,3])  # pic infectieux
+tell(x = fast_100_sortie4, y = sortie_100[,4])  # prevalence Aere annee
+```
+
+### Analyse pour 1000 itérations
+
+```{r, cache=TRUE}
+## FAST (1000 iterations)
+# Generation des valeurs de parametres pour les differents scenarii 
+as_fast_1000 <- sensitivity::fast99(model = NULL,
+                                   factors = names_para,
+                                   n = 1000, 
+                                   q = "qunif",
+                                   q.arg = q.arg)
+
+
+# On run le modele modAppli sur ces valeurs
+sortie_1000 <- modAppli(as_fast_1000$X)
+colnames(sortie_1000) <- c("taux morbidité", "incidence t=730", "pic infectieux", "prévalene 1ère année")
+
+# Calcul des variances et indices de Sobol pour chaque sortie pour chaque sortie du modele
+fast_1000_sortie1 <- as_fast_1000
+fast_1000_sortie2 <- as_fast_1000
+fast_1000_sortie3 <- as_fast_1000
+fast_1000_sortie4 <- as_fast_1000
+
+tell(x = fast_1000_sortie1, y = sortie_1000[,1])  # taux de morbidite
+tell(x = fast_1000_sortie2, y = sortie_1000[,2])  # incidence t=730
+tell(x = fast_1000_sortie3, y = sortie_1000[,3])  # pic infectieux
+tell(x = fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
+```
+
+### Représentation graphique des distributions des sorties du modèle
+
+```{r, echo=FALSE}
+# Fast (n=100)
+labels_sorties <- c("Taux morbidité (t=730)", "Incidence (t=730)", "Pic infectieux", "Prévalence 1ère année" )
+
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    sortie_100[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = NULL,
+    ylab = NULL,
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 1.5
+  )
+  abline(v = m0[i], lty = 2, col = "red")
+  
+}
+
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    sortie_1000[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = NULL,
+    ylab = NULL,
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 1.5
+  )
+  abline(v = m0[i], lty = 2, col = "red")
+  
+}
+```
+
+### Visualisation des indices de sensibilité
+
+```{r, echo=FALSE}
+# Version modifiee de la fonction plot du package fast99()
+plot.fast99 <-
+  function(x,
+           ylim = c(0, 1),
+           main = NULL,
+           names.arg = NULL,
+           ...) {
+    S <- rbind(x$D1 / x$V, 1 - x$Dt / x$V - x$D1 / x$V)
+    colnames(S) <- colnames(x$X)
+    bar.col <- c("white", "grey")
+    barplot(
+      S,
+      ylim = ylim,
+      col = bar.col,
+      main = main,
+      names.arg = names.arg,
+      family = "serif",
+      ylab = "Indice de sensibilité",
+      cex.axis = 1.7,
+      cex = 1.5,
+      cex.lab = 1.6,
+      cex.main = 1.8
+      
+    )
+    # legend("topright", c("main effect", "interactions"), fill = bar.col)
+  }
+
+# Noms modifiés des paramètres 
+tex_label <- c(
+  TeX("$K$"),
+  TeX("$\\psi$"),
+  TeX("$m_L$"),
+  TeX("$m_J$"),
+  TeX("$m_A$"),
+  TeX("$f_J$"),
+  TeX("$f_A$"),
+  TeX("$\\Theta$"),
+  TeX("$\\tau_L$"),
+  TeX("$tau_J$"),
+  TeX("$\\beta_1$"),
+  TeX("$\\sigma$"),
+  TeX("$\\gamma$"),
+  TeX("$\\lambda$"),
+  TeX("$\\mu$")
+)
+
+# Indice de sensibilité par paramètre -----------------
+par(mfrow = c(2, 4))
+# plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie2, main = "Incidence (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie3, main = "Pic infectieux", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie4, main = "Prevalence 1ère année", names.arg = tex_label, family = "serif")
+title(
+  outer = T,
+  adj = .0255,
+  line = -2,
+  main = "(a) 100",
+  font.main = 2,
+  cex.main = 1.5
+)
+
+# plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie2, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie3, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie4, main = "", names.arg = tex_label, family = "serif")
+title(
+  outer = T,
+  adj = .0255,
+  line = -34,
+  main = "(b) 1000",
+  font.main = 2,
+  cex.main = 1.5
+)
+```
+
+### Représentation graphique de l'échantillonnage
+
+```{r, echo=FALSE, cache =TRUE}
+# Valeur des paramètres
+sample_100 <- as_fast_100$X
+sample_1000 <- as_fast_1000$X
+
+tex_label <- c(
+  "$K$",
+  "$\\psi$",
+  "$m_L$",
+  "$m_J$",
+  "$m_A$",
+  "$f_J$",
+  "$f_A$",
+  "$\\Theta$",
+  "$\\tau_L$",
+  "$tau_J$",
+  "$\\beta$",
+  "$\\sigma$",
+  "$\\gamma$",
+  "$\\lambda$",
+  "$\\mu$"
+)
+
+colnames(sample_100) <- tex_label
+colnames(sample_1000) <- tex_label
+
+par(mfrow = c(2, 3))
+
+i = c(1, 6, 15)
+j = c(8, 14, 11)
+
+# 100
+for(k in 1:3){
+  plot(
+    sample_100[, i[k]] ~ sample_100[, j[k]],
+    type = "p",
+    main = NULL,
+    xlab = TeX(colnames(sample_100)[j[k]]),
+    ylab = TeX(colnames(sample_100)[i[k]]),
+    family = "serif",
+    cex = 0.01,
+    cex.lab = 1.5,
+    cex.axis = 1.5
+  )
+}
+
+title(
+  outer = T,
+  adj = 0.52,
+  line = -3,
+  main = "(a) 100",
+  font.main = 2,
+  cex.main = 1.5
+)
+
+# 1000
+for(k in 1:3){
+  plot(
+    sample_1000[, i[k]] ~ sample_1000[, j[k]],
+    type = "p",
+    main = NULL,
+    xlab = TeX(colnames(sample_1000)[j[k]]),
+    ylab = TeX(colnames(sample_1000)[i[k]]),
+    family = "serif",
+    cex = 0.01,
+    cex.lab = 1.5,
+    cex.axis = 1.5
+  )
+}
+
+title(
+  outer = T,
+  adj = 0.52,
+  line = -21,
+  main = "(b) 1000",
+  font.main = 2,
+  cex.main = 1.5
+)
+```
+
+## Modification de la fonction du modèle
+
+Ajout d'un compartiment pathogènes libres.
+
+### Fonction du modèle
+
+```{r}
+modAppli <- function(parametre){  
+  
+  # CONDITIONS DE SIMULATION
+  temps = 2*365;  # Nombre de pas de temps en jours
+  
+  # Initialisation pour la sauvegarde de 4 sorties d'indicateurs epidemiologiques pour chaque jeu de parametres
+  sorties <- matrix(0, nrow = nrow(parametre), ncol = 4)
+  
+  # Boucle des scenarios, autant que de jeux de donnees
+  for (i in 1:nrow(parametre)) { 
+    
+    # STRUCTURE & PARAMETRES DU MODELE
+    # Parametres demographiques
+    K = parametre[i,1];   # Capacite d'accueil du milieu
+    sr = parametre[i,2];	# Sex-ratio
+    m1 = parametre[i,3];	# Mortalite naturelle de la classe d'age 1
+    m2 = parametre[i,4];	# Mortalite naturelle de la classe d'age 2
+    m3 = parametre[i,5];	# Mortalite naturelle de la classe d'age 3
+    f2 = parametre[i,6];	# Taux de fecondite de la classe d'age 2
+    f3 = parametre[i,7];	# Taux de fecondite de la classe d'age 3
+    portee = parametre[i,8];	# Nombre de descendants par reproduction
+    t1 = parametre[i,9];	# Taux de maturation de la classe d'age 1
+    t2 = parametre[i,10];	# Taux de maturation de la classe d'age 2
+    
+    # Parametres epidemiologiques
+    trans = parametre[i,11]; # Taux de transmission de la maladie
+    lat = parametre[i,12];	# Temps d'incubation
+    rec = parametre[i,13];	# Temps de recuperation
+    loss = parametre[i,14];	# Temps de perte d'immunite
+    madd = parametre[i,15];	# Mortalite liee a la maladie
+    
+    ##################################################
+    ## MODIFICATION DU MODELE - Nouveaux parametres ##
+    eta1 = parametre[i,16]
+    eta2 = parametre[i,17]
+    eta3 = parametre[i,18]
+    mpath = parametre[i,19]
+    trans2 = parametre[i,20]
+    a1 = parametre[i,21]
+    a2 = parametre[i,22]
+    a3 = parametre[i,23]
+    ##################################################
+    
+    # INITIALISATION
+    MAT <- array(0, dim=c(4,4,temps), dimnames = list(c("J", "A1", "A2", "total"), c("S", "E", "I", "R")));  # Matrice des effectifs de type [classe,etat,temps]
+    
+    #########################################################################
+    ## MODIFICATION DU MODELE - Vecteur des effectifs des pathogenes libres##
+    PL <- rep(0, temps)  # Aucun pathogene libre au temps 0
+    #########################################################################
+    
+    nvinf <- array(0, dim=c(temps));  # Vecteur de l'incidence journaliere
+    
+    # Condition initiales (La population est a sa structure d'equilibre, prealablement calculee)
+    MAT[1,1,1] <- 27;  # 27 JS
+    MAT[2,1,1] <- 23;  # 23 A1S
+    MAT[3,1,1] <- 36;  # 3 A2S
+    MAT[3,3,1] <- 1;  # 1 A2I
+    
+    # Effectifs totaux par etat de sante
+    MAT[4,1,1] <- sum(MAT[1:3,1,1]);  #S
+    MAT[4,2,1] <- sum(MAT[1:3,2,1]);  #E 
+    MAT[4,3,1] <- sum(MAT[1:3,3,1]);  #I 
+    MAT[4,4,1] <- sum(MAT[1:3,4,1]);  #R 
+    
+    # SIMULATIONS
+    for (t in 1:(temps-1)) {  # Boucle temps
+      
+      ###########################################################
+      ## Modification du modele - Compartiment Pathogene Libre ##
+      PL[t+1] <- eta1 * MAT[1,3,t] + eta2 * MAT[2,3,t] + eta3 * MAT[3,3,t] - mpath * PL[t]
+      ###########################################################
+      
+      # classe d'age J
+      # RQ : les naissances sont non-contaminantes, les nouveaux nes etant dans l'etat S
+      N <- sum(MAT[4,,t]);	# taille de la pop en t
+      MAT[1,1,t+1] <- MAT[1,1,t]*(1-m1-t1-trans*MAT[4,3,t]/N) + loss*MAT[1,4,t] + max(0, sr*portee*(sum(MAT[2,,t])*f2 + sum(MAT[3,,t])*f3) * (1 - N/K)) - a1 * trans2 * MAT[1,1,t] * PL[t]; 
+      MAT[1,2,t+1] <- MAT[1,2,t]*(1-m1-t1-lat) + trans*MAT[1,1,t]*MAT[4,3,t]/N + a1 * trans2 * MAT[1,1,t] * PL[t]; 
+      MAT[1,3,t+1] <- MAT[1,3,t]*(1-m1-madd-t1-rec) + lat*MAT[1,2,t]; 
+      MAT[1,4,t+1] <- MAT[1,4,t]*(1-m1-t1-loss) + rec*MAT[1,3,t]; 
+      
+      # classe d'age A1
+      MAT[2,1,t+1] <- MAT[1,1,t]*t1 + MAT[2,1,t]*(1-m2-t2-trans*MAT[4,3,t]/N) + loss*MAT[2,4,t] - a2 * trans2 * MAT[2,1,t] * PL[t]; 
+      MAT[2,2,t+1] <- MAT[1,2,t]*t1	+ MAT[2,2,t]*(1-m2-t2-lat) + trans*MAT[2,1,t]*MAT[4,3,t]/N + a2 * trans2 * MAT[2,1,t] * PL[t]; 
+      MAT[2,3,t+1] <- MAT[1,3,t]*t1	+ MAT[2,3,t]*(1-m2-madd-t2-rec) + lat*MAT[2,2,t];
+      MAT[2,4,t+1] <- MAT[1,4,t]*t1	+ MAT[2,4,t]*(1-m2-t2-loss) + rec*MAT[2,3,t];
+      
+      # classe d'age 3
+      MAT[3,1,t+1] <- MAT[2,1,t]*t2	+ MAT[3,1,t]*(1-m3-trans*MAT[4,3,t]/N) + loss*MAT[3,4,t] - a3 * trans2 * MAT[3,1,t] * PL[t]; 
+      MAT[3,2,t+1] <- MAT[2,2,t]*t2	+ MAT[3,2,t]*(1-m3-lat)	+ trans*MAT[3,1,t]*MAT[4,3,t]/N + a3 * trans2 * MAT[3,1,t] * PL[t]; 
+      MAT[3,3,t+1] <- MAT[2,3,t]*t2	+ MAT[3,3,t]*(1-m3-madd-rec) + lat*MAT[3,2,t];
+      MAT[3,4,t+1] <- MAT[2,4,t]*t2	+ MAT[3,4,t]*(1-m3-loss) + rec*MAT[3,3,t];
+  
+      
+      # Calcule des effectifs totaux par etat de sante
+      MAT[4,1,t+1] <- sum(MAT[1:3,1,t+1]);  #S
+      MAT[4,2,t+1] <- sum(MAT[1:3,2,t+1]);  #E
+      MAT[4,3,t+1] <- sum(MAT[1:3,3,t+1]);  #I
+      MAT[4,4,t+1] <- sum(MAT[1:3,4,t+1]);  #R
+      
+      # Calcule de l'incidence journaliere
+      nvinf[t+1]   <- trans*MAT[4,1,t]*MAT[4,3,t]/N
+      
+    }  # fin boucle temps
+    
+    
+    
+    # SORTIES PONCTUELLES
+    # --- Taux de morbidite
+    sortie1 <- (MAT[4,2,temps]+MAT[4,3,temps])/sum(MAT[4,,temps])
+    
+    # --- Incidence finale
+    sortie2 <- nvinf[temps]
+    
+    # --- Pic infectieux (Nombre max d'infecte)
+    sortie3 <- max(MAT[4,3,1:temps])
+    
+    # ---  Prevalence sur la premiere annee
+    sortie4 <- sum(nvinf[1:365])
+    
+    # Integration des sorties ponctuelles a leur matrice de sortie
+    sorties[i,1] <- sortie1;  # tx morbidite
+    sorties[i,2] <- sortie2;  # incidence finale
+    sorties[i,3] <- sortie3;  # pic infectieux
+    sorties[i,4] <- sortie4;  # prevalence premiere annee
+    
+  }  # Fin de la boucle de scenario
+  
+  return(sorties)
+  
+} 
+```
+
+### Paramètres du modèle
+
+```{r}
+#### Parametres initiaux du modele
+ValNominale <-c(
+  K = 100,
+  sr = 0.5,
+  m1 = 0.0014,
+  m2 = 0.00029,
+  m3 = 0.0019,
+  f2 = 0.0019,
+  f3 = 0.0082,
+  portee = 5,
+  t1 = 1 / 365,
+  t2 = 1 / 365,
+  trans = 0.3,
+  lat = 1 / 5,
+  rec = 1 / 20,
+  loss = 1 / 100,
+  madd = 0.001,
+  eta1 = 1,
+  eta2 = 0.1,
+  eta3 = 0.2,
+  mpath = 1/58,
+  trans2 = 0.003,
+  a1 = 1,
+  a2 = 0.4,
+  a3 = 0.5
+)
+```
+
+## Analyse de sensibilité : OAT - Modèle modifié
+
+### Analyse
+
+```{r}
+## Initialisation
+# Gamme de variation de chaque paramètre 
+gamme_params <- vector(mode = "list", length = length(ValNominale))
+for (i in 1:length(ValNominale)) {
+  gamme_params[[i]] <- seq(from = 0.75 * ValNominale[i], 
+                           to = 1.25 * ValNominale[i], 
+                           length.out = 10)
+}
+
+# Variable contenant les noms des paramètres
+names_para <- names(ValNominale)
+
+# Matrice avec en ligne les scenarii non-modifiés et en colonne les paramètres
+mat_scenarios <-
+  matrix(
+    data = ValNominale,
+    nrow = length(ValNominale) * 10,
+    ncol = length(ValNominale),
+    dimnames = list(paste0("scenario", 1:(length(ValNominale) * 10)), names_para),
+    byrow = T
+  )
+
+# Implementation des scenarii modifiés 
+ligne <- 1
+
+for (i in 1:length(gamme_params)){
+  mat_scenarios[ligne:(ligne+10-1), i] <- gamme_params[[i]][1:10]
+  ligne <- ligne + 10
+}
+```
+
+```{r, cache=TRUE}
+# On modélise chaque scénario avec la fonction modAppli
+oat <- modAppli(mat_scenarios)
+dimnames(oat) <- list(c(1:(10*length(ValNominale))), c("tx_morbidite", "incidence_t730", "pic_infectieux", "prevalence_annee_1"))
+
+# On modélise avec les paramètres de référence le modèle m0
+m0 <- modAppli(matrix(ValNominale, nrow = 1))
+
+
+```
+
+```{r}
+## Indice de Bauer & Hamby
+bauer <- as.data.frame(matrix(data = NA, nrow = length(ValNominale), ncol = 4))
+
+# Calcul de l'indice (voir rapport pour détail)
+k = 1
+for(i in 1:4){
+  for(j in seq(10, length(ValNominale)*10, 10)){
+    
+    bauer[k, i] <- (max(oat[((j-10)+1):j,i]) - min(oat[((j-10)+1):j,i])) / max(oat[((j-10)+1):j,i])
+    k = k + 1
+    
+  }
+  k = 1
+}
+```
+
+### Représentation graphique de l'analyse de sensibilité
+
+```{r, echo=FALSE, cache=TRUE}
+# On renomme les lignes (paramètres) et les colonnes (sorties)
+rownames(bauer) <- names_para 
+colnames(bauer) <- c(
+  "tx_morbidite",
+  "incidence_t730",
+  "pic_infectieux",
+  "prevalence_annee_1"
+)
+
+
+# On ajoute une colonne "type de processus" et "parametre" pour la visualisation
+bauer["processus"] <- c(rep("demo", 10), rep("epidemio", 13))
+bauer["params"] <- names_para
+
+# On reformate le tableau pour ggplot
+bauer_gg <- pivot_longer(data = bauer, cols = 1:4, names_to = "indicateur", values_to = "indice")
+bauer_gg$indicateur <-
+  factor(
+    x = bauer_gg$indicateur,
+    levels = c(
+      "tx_morbidite",
+      "incidence_t730",
+      "pic_infectieux",
+      "prevalence_annee_1"
+    )
+  )
+
+# On visualise les résultats de l'analyse de sensibilité
+ggplot(data = bauer_gg, aes(x = factor(params, levels = names_para), y = indice, fill = processus)) +
+  geom_bar(position = position_dodge(), stat = "identity", col = "black", lwd = 0.8, width = 0.6) + 
+  theme_classic() +
+  xlab(NULL) +
+  facet_wrap(~indicateur, ncol = 2, nrow = 2, scales = "free",  labeller = labeller(indicateur = c(incidence_t730 = "Incidence (t=730)", pic_infectieux = "Pic infectieux", prevalence_annee_1 = "Prévalence 1ère année", tx_morbidite = "Taux de morbidité (t=730)"))) + # Facetter par "indicateur"
+  # theme(strip.text = element_blank() +  # Enlève labels des facettes
+  ylab("Indice de sensibilité") +
+  ylim(c(0, max(bauer_gg$indice))) +
+  scale_fill_manual(values=c("#ffffff","#CD0000"), name=NULL) +
+  theme(legend.position = "none",
+        text = element_text(size = 14, family = "serif")) +
+  scale_x_discrete(labels = c(
+    TeX("$K$"),
+    TeX("$\\psi$"),
+    TeX("$m_L$"),
+    TeX("$m_J$"),
+    TeX("$m_A$"),
+    TeX("$f_J$"),
+    TeX("$f_A$"),
+    TeX("$\\Theta$"),
+    TeX("$\\tau_L$"),
+    TeX("$tau_J$"),
+    TeX("$\\beta_1$"),
+    TeX("$\\sigma$"),
+    TeX("$\\gamma$"),
+    TeX("$\\lambda$"),
+    TeX("$\\mu$"),
+    TeX("$\\eta_L"),
+    TeX("$\\eta_J"),
+    TeX("$\\eta_A"),
+    TeX("$\\m_P"),
+    TeX("$\\beta_2"),
+    TeX("$\\alpha_L"),
+    TeX("$\\alpha_J"),
+    TeX("$\\alpha_A")
+  ))
+```
+
+## Analyse de sensibilité : Morris - Modèle modifié
+
+### Analyse
+
+```{r, cache=TRUE}
+# Création des bornes minmum et maximum
+bornes <- vector(mode = "list", length = 2)
+bornes[[1]] <- .75 * ValNominale  # borne inférieure
+bornes[[2]] <- 1.25 * ValNominale  # borne supérieure
+
+# Fonction morris
+AS.morris <- morris(
+  model = modAppli,
+  factors = c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd","eta1","eta2","eta3","mpath","trans2","a1","a2","a3"),
+  r = 100,  # Nombre d'itération
+  design = list(
+    type = 'oat',
+    levels = 6,
+    grid.jump = 3
+  ),
+  # Gamme de variation [min; max]
+  binf <- bornes[[1]],
+  bsup <- bornes[[2]]
+)
+```
+
+### Diagramme de Morris
+
+```{r, echo=TRUE}
+# mu star
+mu.star <- apply(abs(AS.morris$ee), 3, function(M){apply(M, 2, mean)})
+# sigma
+sigma <- apply(AS.morris$ee, 3, function(M){apply(M, 2, sd)})
+
+
+# Dataframe
+df.sorties <- data.frame(AS.morris$factors, mu.star, sigma, row.names = NULL)
+colnames(df.sorties) <- c("Factors","mu.star1","mu.star2","mu.star3","mu.star4","sigma1","sigma2","sigma3","sigma4")
+
+# Moyenne des sensibilites des 4 sorties
+df.sorties$Moy.mu.star <- rowMeans(df.sorties[,2:5])
+df.sorties$Moy.sigma <- rowMeans(df.sorties[,6:9])
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, cache=TRUE}
+# On remplace le nom des paramètres par leur symbole LaTeX
+tex_label <- c(
+  TeX("$K$"),
+  TeX("$\\psi$"),
+  TeX("$m_L$"),
+  TeX("$m_J$"),
+  TeX("$m_A$"),
+  TeX("$f_J$"),
+  TeX("$f_A$"),
+  TeX("$\\Theta$"),
+  TeX("$\\tau_L$"),
+  TeX("$tau_J$"),
+  TeX("$\\beta_1$"),
+  TeX("$\\sigma$"),
+  TeX("$\\gamma$"),
+  TeX("$\\lambda$"),
+  TeX("$\\mu$"),
+  TeX("$\\eta_L$"),
+  TeX("$\\eta_J$"),
+  TeX("$\\eta_A$"),
+  TeX("$\\m_P$"),
+  TeX("$\\beta_2$"),
+  TeX("$\\alpha_L$"),
+  TeX("$\\alpha_J$"),
+  TeX("$\\alpha_A$")
+)
+
+df.sorties["Factors_tex"] <- factor(x = df.sorties$Factors, levels = df.sorties$Factors, labels = tex_label)  # Nouvelle variable avec expression latex
+
+
+# Premiere sortie - Taux de morbidite
+plot1 <- ggplot(data = df.sorties, aes(x = mu.star1, y = sigma1)) +
+  geom_point(size = .7) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 5,
+    parse = T,
+    size = 5, direction = "y"
+  ) +  # parse sert à interpréter le code latex
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star1) + .05*max(df.sorties$mu.star1))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma1) + .05*max(df.sorties$mu.star1))) +
+  ggtitle("Graphique de Morris - Taux de morbidite (Sortie 1)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Taux de morbidité t=730") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+# Deuxieme sortie : Incidence finale
+plot2 <- ggplot(data = df.sorties, aes(x = mu.star2, y = sigma2)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 9,
+    parse = T, size = 5, direction = "both"
+  ) +
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star2) + .05*max(df.sorties$mu.star2))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma2) + .05*max(df.sorties$mu.star2))) +
+  ggtitle("Graphique de Morris - Incidence finale (Sortie 2)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Incidence t=730") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+# Troisieme sortie : Pic infectieux
+plot3 <- ggplot(data = df.sorties, aes(x = mu.star3, y = sigma3)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex),
+    show_guide = FALSE,
+    max.overlaps = 5,
+    parse = T, size = 5, direction = "both"
+  ) +
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star3) + .06*max(df.sorties$mu.star3))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma3) + .06*max(df.sorties$mu.star3))) +
+  ggtitle("Graphique de Morris - Pic infectieux (Sortie 3)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Pic infectieux") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+# Quatrieme sortie : Prevalence de la premiere annee
+plot4 <- ggplot(data = df.sorties, aes(x = mu.star4, y = sigma4)) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", lwd = .4) +
+  geom_abline(intercept = 0, slope = .2, linetype = "dashed", color = "black", lwd = .4) +
+  geom_point(size = .7) +
+  geom_text_repel(
+    aes(label = Factors_tex) ,
+    show_guide = FALSE,
+    max.overlaps = 7,
+    parse = T, size = 5, direction = "both"
+  ) + 
+  scale_x_continuous(limits = c(-0.01, max(df.sorties$mu.star4) + .05*max(df.sorties$mu.star4))) +
+  scale_y_continuous(limits = c(-0.001,max(df.sorties$sigma4)+ .05*max(df.sorties$mu.star4))) +
+  ggtitle("Graphique de Morris - Prevalence de la premiere annee (Sortie 4)") +
+  xlab(TeX("$\\mu^*$")) +
+  ylab(TeX("$\\sigma$")) +
+  theme_classic() +
+  ggtitle("Prévalence 1ère année") +
+  theme(plot.title = element_text(size = 16), text = element_text(size = 16, family = "serif")) # taille du titre
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
+```
+
+## Analyse de sensibilité : FAST - Modèle modifié
+
+### Analyse
+
+```{r, cache=TRUE}
+## Initialisation
+# Noms des parametres
+names_para <- c("K","sr","m1","m2","m3","f2","f3","portee","t1","t2","trans","lat","rec","loss","madd","eta1","eta2","eta3","mpath","trans2","a1","a2","a3")
+
+# Liste des parametres de distribution pour chaque parametre
+q.arg <-
+  apply(cbind(0.75 * unname(ValNominale),
+              1.25 * unname(ValNominale)),
+        MARGIN = 1,
+        function(x) {
+          list(min = x[1], max = x[2])
+        })
+```
+
+```{r, cache=TRUE}
+# FAST (1000 iterations)
+# Generation des valeurs de parametres pour les differents scenarii 
+as_fast_1000 <- sensitivity::fast99(model = NULL,
+                                   factors = names_para,
+                                   n = 1000, 
+                                   q = "qunif",
+                                   q.arg = q.arg)
+
+
+# On run le modele modAppli sur ces valeurs
+sortie_1000 <- modAppli(as_fast_1000$X)
+colnames(sortie_1000) <- c("taux morbidité", "incidence t=730", "pic infectieux", "prévalene 1ère année")
+
+# Calcul des variances et indices de Sobol pour chaque sortie pour chaque sortie du modele
+fast_1000_sortie1 <- as_fast_1000
+fast_1000_sortie2 <- as_fast_1000
+fast_1000_sortie3 <- as_fast_1000
+fast_1000_sortie4 <- as_fast_1000
+
+tell(x = fast_1000_sortie1, y = sortie_1000[,1])  # taux de morbidite
+tell(x = fast_1000_sortie2, y = sortie_1000[,2])  # incidence t=730
+tell(x = fast_1000_sortie3, y = sortie_1000[,3])  # pic infectieux
+tell(x = fast_1000_sortie4, y = sortie_1000[,4])  # prevalence Aere annee
+```
+
+### Représentation graphique des distributions des sorties du modèle
+
+```{r, echo=FALSE}
+# Fast (n=100)
+labels_sorties <- c("Taux morbidité (t=730)", "Incidence (t=730)", "Pic infectieux", "Prévalence 1ère année" )
+
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    sortie_100[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = NULL,
+    ylab = NULL,
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 1.5
+  )
+  abline(v = m0[i], lty = 2, col = "red")
+  
+}
+
+par(mfrow = c(1, 4))
+line<-par(lwd=2)
+for (i in 1:4) {
+  hist(
+    sortie_1000[, i],
+    col = "#DCE1EA",
+    freq = T,
+    border = "black",
+    xlab = NULL,
+    ylab = NULL,
+    main = labels_sorties[i],
+    family = "serif",
+    cex.lab = 2,
+    cex.axis = 2,
+    cex.main = 1.5
+  )
+  abline(v = m0[i], lty = 2, col = "red")
+  
+}
+```
+
+### Visualisation des indices de sensibilité
+
+```{r, echo=FALSE}
+# Version modifiee de la fonction plot du package fast99()
+plot.fast99 <-
+  function(x,
+           ylim = c(0, 1),
+           main = NULL,
+           names.arg = NULL,
+           ...) {
+    S <- rbind(x$D1 / x$V, 1 - x$Dt / x$V - x$D1 / x$V)
+    colnames(S) <- colnames(x$X)
+    bar.col <- c("white", "grey")
+    barplot(
+      S,
+      ylim = ylim,
+      col = bar.col,
+      main = main,
+      names.arg = names.arg,
+      family = "serif",
+      ylab = "Indice de sensibilité",
+      cex.axis = 1.7,
+      cex = 1.5,
+      cex.lab = 1.6,
+      cex.main = 1.8
+      
+    )
+    # legend("topright", c("main effect", "interactions"), fill = bar.col)
+  }
+
+# Noms modifiés des paramètres 
+tex_label <- c(
+  TeX("$K$"),
+  TeX("$\\psi$"),
+  TeX("$m_L$"),
+  TeX("$m_J$"),
+  TeX("$m_A$"),
+  TeX("$f_J$"),
+  TeX("$f_A$"),
+  TeX("$\\Theta$"),
+  TeX("$\\tau_L$"),
+  TeX("$tau_J$"),
+  TeX("$\\beta_1$"),
+  TeX("$\\sigma$"),
+  TeX("$\\gamma$"),
+  TeX("$\\lambda$"),
+  TeX("$\\mu$"),
+  TeX("$\\eta_L$"),
+  TeX("$\\eta_J$"),
+  TeX("$\\eta_A$"),
+  TeX("$\\m_P$"),
+  TeX("$\\beta_2$"),
+  TeX("$\\alpha_L$"),
+  TeX("$\\alpha_J$"),
+  TeX("$\\alpha_A$")
+)
+
+# Indice de sensibilité par paramètre -----------------
+par(mfrow = c(2, 4))
+# plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie1, main = "Taux de morbidité (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie2, main = "Incidence (t=730)", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie3, main = "Pic infectieux", names.arg = tex_label, family = "serif")
+plot.fast99(fast_100_sortie4, main = "Prevalence 1ère année", names.arg = tex_label, family = "serif")
+title(
+  outer = T,
+  adj = .0255,
+  line = -2,
+  main = "(a) 100",
+  font.main = 2,
+  cex.main = 1.5
+)
+
+# plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie1, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie2, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie3, main = "", names.arg = tex_label, family = "serif")
+plot.fast99(fast_1000_sortie4, main = "", names.arg = tex_label, family = "serif")
+title(
+  outer = T,
+  adj = .0255,
+  line = -34,
+  main = "(b) 1000",
+  font.main = 2,
+  cex.main = 1.5
+)
+```
